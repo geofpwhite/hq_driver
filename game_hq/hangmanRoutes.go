@@ -18,18 +18,15 @@ func hangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 		if err != nil || !b {
 			panic("/hangman/ws/:gameHash gave an error")
 		}
-		game := games[gameHash]
-		for {
-			x, y, z := conn.ReadMessage()
-			println(x, y, z)
-			println(game)
-		}
+		fmt.Println(games[gameHash])
+		fmt.Println(gameHash)
+		handleWebSocketHangman(conn, inputChannel, games[gameHash], false, "", playerHashes)
 	})
-
-	r.GET("/hangman/:gameHash", func(c *gin.Context) {})
 
 	r.GET("/hangman/new_game", func(c *gin.Context) {
 		gState := newGameHangman()
+		var game Game = gState
+		games[gState.gameHash] = &game
 		// newTickerInputChannel := make(chan (inputInfo))
 		// tickerInputChannels[gState.gameHash] = newTickerInputChannel
 		// go (*gState).runTicker(tickerTimeoutChannel, newTickerInputChannel, closeGameChannel)

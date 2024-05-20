@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const HOST_WINS = 1
@@ -288,7 +290,25 @@ func (gState *hangman) chat(message string, playerIndex int) {
 func (gState *hangman) JSON() ClientState {
 	gState.mut.Lock()
 	defer gState.mut.Unlock()
-	return hangmanClientState{}
+	usernames := []string{}
+	for _, p := range (*gState).players {
+		usernames = append(usernames, p.Username)
+	}
+
+	newState := hangmanClientState{
+		Players:        usernames,
+		Turn:           gState.turn,
+		Host:           gState.curHostIndex,
+		RevealedWord:   gState.revealedWord,
+		GuessesLeft:    gState.guessesLeft,
+		LettersGuessed: gState.guessed,
+		NeedNewWord:    gState.needNewWord,
+		GameHash:       gState.gameHash,
+		Warning:        "timed out",
+		Winner:         gState.winner,
+		ChatLogs:       gState.chatLogs,
+	}
+	return newState
 }
 
 func (gState *hangman) Players() []*Player {
