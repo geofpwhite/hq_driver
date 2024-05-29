@@ -55,6 +55,7 @@ func (nwi *newWordInput) ChangeState(gameObj *Game) {
 	if gState.needNewWord && nwi.playerIndex == gState.curHostIndex {
 		gState.newWord(nwi.newWord)
 	}
+
 }
 func (gi *guessInput) GameHash() string {
 	return gi.gameHash
@@ -100,6 +101,7 @@ func (egi *exitGameInput) PlayerIndex() int {
 	return egi.playerIndex
 }
 func (egi *exitGameInput) ChangeState(gameObj *Game) {
+	(*gameObj).(*hangman).removePlayer(egi.playerIndex)
 }
 
 func (cgi *closeGameInput) GameHash() string {

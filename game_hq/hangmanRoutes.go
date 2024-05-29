@@ -3,6 +3,7 @@ package hq
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"slices"
 	"strconv"
 
@@ -70,9 +71,12 @@ func hangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 		} else {
 			var gameHash string
 			for i, g := range games {
-				for _, p := range (*g).(*hangman).Players() {
-					if p.PlayerHash == hash {
-						gameHash = i
+				if reflect.TypeOf(*g) == reflect.TypeOf(&hangman{}) {
+
+					for _, p := range (*g).(*hangman).Players() {
+						if p.PlayerHash == hash {
+							gameHash = i
+						}
 					}
 				}
 			}

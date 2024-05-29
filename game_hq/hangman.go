@@ -194,6 +194,12 @@ func (gState *hangman) randomNewWord() {
 func (gState *hangman) newWord(word string) {
 	gState.mut.Lock()
 	defer gState.mut.Unlock()
+	abc := "abcdefghijklmnopqrstuvwxyz"
+	for _, c := range word {
+		if !strings.Contains(abc, string(c)) {
+			return
+		}
+	}
 	x, _ := gState.wordCheck.Query("select word from words where word='" + word + "'")
 	result := ""
 	if x.Next() {
@@ -304,7 +310,7 @@ func (gState *hangman) JSON() ClientState {
 		LettersGuessed: gState.guessed,
 		NeedNewWord:    gState.needNewWord,
 		GameHash:       gState.gameHash,
-		Warning:        "timed out",
+		Warning:        "",
 		Winner:         gState.winner,
 		ChatLogs:       gState.chatLogs,
 	}

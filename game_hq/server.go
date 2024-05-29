@@ -1,6 +1,7 @@
 package hq
 
 import (
+	"accounts"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,8 @@ func serve(inputChannel chan Input, games map[string]*Game, playerHashes map[str
 	})
 	hangmanRoutes(r, &upgrader, games, playerHashes, inputChannel)
 	connect4Routes(r, &upgrader, games, playerHashes, inputChannel)
+	accountRoutes(r, accounts.NewAccountsGamesHandler())
 
-	r.Run("localhost:8080")
+	r.Run("0.0.0.0:8080")
 
 }
