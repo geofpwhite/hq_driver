@@ -1,10 +1,14 @@
 package hq
 
-import "github.com/gorilla/websocket"
+import (
+	"interfaces"
 
-func outputLoop(outputChannel chan string, games map[string]*Game, playerHashes map[string]*websocket.Conn) {
-	var game Game
-	var json ClientState
+	"github.com/gorilla/websocket"
+)
+
+func outputLoop(outputChannel chan string, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn) {
+	var game interfaces.Game
+	var json interfaces.ClientState
 	var conn *websocket.Conn
 	for gameHash := range outputChannel {
 

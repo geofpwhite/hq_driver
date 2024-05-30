@@ -1,4 +1,4 @@
-package hq
+package hangman
 
 import (
 	"fmt"
@@ -7,11 +7,14 @@ import (
 	"slices"
 	"strconv"
 
+	"interfaces"
+	"myHash"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
-func hangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*Game, playerHashes map[string]*websocket.Conn, inputChannel chan Input) {
+func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
 	r.Static("/hangman_game/", "./build_hangman/")
 	r.GET("/hangman/ws/:gameHash", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -26,7 +29,7 @@ func hangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 
 	r.GET("/hangman/new_game", func(c *gin.Context) {
 		gState := newGameHangman()
-		var game Game = gState
+		var game interfaces.Game = gState
 		games[gState.gameHash] = &game
 		// newTickerInputChannel := make(chan (inputInfo))
 		// tickerInputChannels[gState.gameHash] = newTickerInputChannel
@@ -92,7 +95,7 @@ func hangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 		if _player == nil || games[gameHash] == nil {
 			return
 		}
-		playerIndex := slices.IndexFunc((*games[gameHash]).(*hangman).players, func(p *Player) bool { return p.PlayerHash == playerHash })
+		playerIndex := slices.IndexFunc((*games[gameHash]).(*hangman).players, func(p *interfaces.Player) bool { return p.PlayerHash == playerHash })
 
 		delete(playerHashes, playerHash)
 		inputChannel <- &exitGameInput{gameHash, playerIndex}
@@ -100,8 +103,8 @@ func hangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 }
 func handleWebSocketHangman(
 	conn *websocket.Conn,
-	inputChannel chan Input,
-	gameObj *Game,
+	inputChannel chan interfaces.Input,
+	gameObj *interfaces.Game,
 	reconnect bool,
 	hash string,
 	playerHashes map[string]*websocket.Conn,
@@ -114,7 +117,7 @@ func handleWebSocketHangman(
 			if err := conn2.Close(); err != nil {
 				fmt.Println(err)
 			}
-			playerIndex = slices.IndexFunc(gState.players, func(p *Player) bool { return p.PlayerHash == hash })
+			playerIndex = slices.IndexFunc(gState.players, func(p *interfaces.Player) bool { return p.PlayerHash == hash })
 			if playerIndex == -1 {
 				conn.WriteJSON(hangmanClientState{Hash: "undefined", Warning: "2"})
 				conn.Close()
@@ -125,9 +128,9 @@ func handleWebSocketHangman(
 
 	} else {
 		playerIndex = len(gState.players)
-		playerHash := Hash(32)
+		playerHash := myHash.Hash(32)
 		hash = playerHash
-		newPlayer := Player{Username: "Player " + strconv.Itoa(playerIndex+1), PlayerHash: playerHash}
+		newPlayer := interfaces.Player{Username: "Player " + strconv.Itoa(playerIndex+1), PlayerHash: playerHash}
 		gState.newPlayer(newPlayer)
 
 		playerHashes[playerHash] = conn
@@ -188,7 +191,7 @@ func handleWebSocketHangman(
 		}
 
 		GameHash := gState.gameHash
-		PlayerIndex := slices.IndexFunc(gState.players, func(p *Player) bool {
+		PlayerIndex := slices.IndexFunc(gState.players, func(p *interfaces.Player) bool {
 			return p.PlayerHash == hash
 		})
 		switch messageType {

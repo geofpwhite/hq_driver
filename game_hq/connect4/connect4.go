@@ -1,7 +1,9 @@
-package hq
+package connect4
 
 import (
 	"fmt"
+	"interfaces"
+	"myHash"
 	"slices"
 	"sync"
 )
@@ -19,16 +21,9 @@ type connect4InsertInput struct {
 type connect4RotateInput struct {
 	gameHash    string
 	playerIndex int
-	team        int
 }
 
-type connect4Input struct {
-	inputType   InputType
-	gameHash    string
-	playerIndex int
-}
-
-func (c4i *connect4InsertInput) ChangeState(gameObj *Game) {
+func (c4i *connect4InsertInput) ChangeState(gameObj *interfaces.Game) {
 	c4 := (*gameObj).(*connect4)
 	c4.Insert(c4i.team, c4i.column)
 	_, y := c4.scanForConnect4()
@@ -44,7 +39,7 @@ func (c4i *connect4InsertInput) PlayerIndex() int {
 	return c4i.playerIndex
 }
 
-func (c4i *connect4RotateInput) ChangeState(gameObj *Game) {
+func (c4i *connect4RotateInput) ChangeState(gameObj *interfaces.Game) {
 	c4 := (*gameObj).(*connect4)
 	c4.Rotate()
 	_, y := c4.scanForConnect4()
@@ -75,7 +70,7 @@ type connect4 struct {
 	field            [][]int
 	turn             int
 	playersConnected int
-	players          []*Player
+	players          []*interfaces.Player
 	mut              *sync.Mutex
 }
 
@@ -88,14 +83,14 @@ func newGameConnect4() (*connect4, string) {
 	for i := 0; i < 8; i++ {
 		c4.field[i] = make([]int, 8)
 	}
-	hash := Hash(6)
+	hash := myHash.Hash(6)
 	return c4, hash
 }
 
-func (c4 *connect4) Players() []*Player {
+func (c4 *connect4) Players() []*interfaces.Player {
 	return c4.players
 }
-func (c4 *connect4) JSON() ClientState {
+func (c4 *connect4) JSON() interfaces.ClientState {
 	c4.mut.Lock()
 	defer c4.mut.Unlock()
 	var cp [][]int = make([][]int, 8)

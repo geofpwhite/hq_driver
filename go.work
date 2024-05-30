@@ -4,4 +4,8 @@ use (
 	.
 	./game_hq
 	./game_hq/accountDB
+	./game_hq/connect4
+	./game_hq/hangman
+	./game_hq/interfaces
+	./game_hq/myHash
 )

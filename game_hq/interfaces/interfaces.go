@@ -1,4 +1,4 @@
-package hq
+package interfaces
 
 type InputType string
 

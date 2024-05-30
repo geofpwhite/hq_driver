@@ -1,4 +1,4 @@
-package hq
+package myHash
 
 import (
 	"math/rand"

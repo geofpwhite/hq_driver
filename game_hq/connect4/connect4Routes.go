@@ -1,17 +1,20 @@
-package hq
+package connect4
 
 import (
 	"fmt"
+	"myHash"
 	"net/http"
 	"slices"
 	"strconv"
 	"strings"
 
+	"interfaces"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
-func connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*Game, playerHashes map[string]*websocket.Conn, inputChannel chan Input) {
+func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
 	r.GET("/connect4/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_screen_connect4.go.tmpl", gin.H{})
 	})
@@ -23,16 +26,16 @@ func connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 		}
 		gameObj := *games[gameHash]
 		game := gameObj.(*connect4)
-		playerHash := Hash(10)
+		playerHash := myHash.Hash(10)
 		playerHashes[playerHash] = conn
 		if game.playersConnected >= 2 {
 			//don't let them join
 			return
 		} else if game.playersConnected == 1 {
-			game.players = append(game.players, &Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 1})
+			game.players = append(game.players, &interfaces.Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 1})
 			game.playersConnected++
 		} else if game.playersConnected == 0 {
-			game.players = append(game.players, &Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 0})
+			game.players = append(game.players, &interfaces.Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 0})
 			game.playersConnected++
 		}
 		if !b {
@@ -69,7 +72,7 @@ func connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 	})
 	r.GET("/connect4/new_game", func(c *gin.Context) {
 		c4, hash := newGameConnect4()
-		var g Game = c4
+		var g interfaces.Game = c4
 		games[hash] = &g
 		c.JSON(200, hash)
 	})

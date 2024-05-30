@@ -2,14 +2,18 @@ package hq
 
 import (
 	"accounts"
+	"interfaces"
 	"net/http"
+
+	"connect4"
+	"hangman"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
 // nastiest part of the system.
-func serve(inputChannel chan Input, games map[string]*Game, playerHashes map[string]*websocket.Conn) {
+func serve(inputChannel chan interfaces.Input, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn) {
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -21,8 +25,8 @@ func serve(inputChannel chan Input, games map[string]*Game, playerHashes map[str
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_page.go.tmpl", gin.H{})
 	})
-	hangmanRoutes(r, &upgrader, games, playerHashes, inputChannel)
-	connect4Routes(r, &upgrader, games, playerHashes, inputChannel)
+	hangman.HangmanRoutes(r, &upgrader, games, playerHashes, inputChannel)
+	connect4.Connect4Routes(r, &upgrader, games, playerHashes, inputChannel)
 	accountRoutes(r, accounts.NewAccountsGamesHandler())
 
 	r.Run("0.0.0.0:8080")

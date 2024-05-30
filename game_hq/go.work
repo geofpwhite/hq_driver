@@ -3,4 +3,8 @@ go 1.22.2
 use (
 	.
 	./accountDB
+	./connect4
+	./hangman
+	./interfaces
+	./myHash
 )

@@ -1,8 +1,10 @@
 package hq
 
-func gameLoop(inputChannel chan Input, outputChannel chan string, games map[string]*Game) {
+import "interfaces"
+
+func gameLoop(inputChannel chan interfaces.Input, outputChannel chan string, games map[string]*interfaces.Game) {
 	var gameHash string
-	var game *Game
+	var game *interfaces.Game
 	for userInput := range inputChannel {
 		gameHash = userInput.GameHash()
 		game = games[gameHash]

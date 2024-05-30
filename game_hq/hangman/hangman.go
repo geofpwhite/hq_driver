@@ -1,4 +1,4 @@
-package hq
+package hangman
 
 import (
 	"database/sql"
@@ -9,6 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"interfaces"
+	"myHash"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -16,7 +19,7 @@ const HOST_WINS = 1
 const HOST_LOSES = 2
 
 type hangmanInput struct {
-	inputType   InputType
+	inputType   interfaces.InputType
 	gameHash    string
 	playerIndex int
 }
@@ -50,7 +53,7 @@ type hangman struct {
 	currentWord         string
 	revealedWord        string
 	guessed             string
-	players             []*Player
+	players             []*interfaces.Player
 	curHostIndex        int
 	turn                int
 	guessesLeft         int
@@ -72,10 +75,10 @@ func newGameHangman() *hangman {
 		winner:       -1,
 		needNewWord:  true,
 		guessesLeft:  6,
-		players:      make([]*Player, 0),
+		players:      make([]*interfaces.Player, 0),
 		mut:          &sync.Mutex{},
 	}
-	gameCode := Hash(6)
+	gameCode := myHash.Hash(6)
 	gState.gameHash = gameCode
 	return gState
 }
@@ -83,7 +86,7 @@ func newGameHangman() *hangman {
 /*
 starts a ticker that either times out the current turn and increments it, or resets back to 0 on user input
 */
-func (gState *hangman) runTicker(timeoutChannel chan string, inputChannel chan Input, closeGameChannel chan string) {
+func (gState *hangman) runTicker(timeoutChannel chan string, inputChannel chan interfaces.Input, closeGameChannel chan string) {
 	ticker := time.NewTicker(60 * time.Second)
 	gState.consecutiveTimeouts = 0
 	defer ticker.Stop()
@@ -115,7 +118,7 @@ func (gState *hangman) runTicker(timeoutChannel chan string, inputChannel chan I
 		}
 	}
 }
-func (gState *hangman) newPlayer(p Player) {
+func (gState *hangman) newPlayer(p interfaces.Player) {
 	gState.mut.Lock()
 	defer gState.mut.Unlock()
 	gState.players = append(gState.players, &p)
@@ -271,7 +274,7 @@ func (gState *hangman) changeUsername(playerIndex int, newUsername string) {
 	log.Println("change username")
 	gState.mut.Lock()
 	defer gState.mut.Unlock()
-	if slices.IndexFunc(gState.players, func(p *Player) bool {
+	if slices.IndexFunc(gState.players, func(p *interfaces.Player) bool {
 		return p.Username == newUsername
 	}) == -1 {
 		oldUsername := gState.players[playerIndex].Username
@@ -293,7 +296,7 @@ func (gState *hangman) chat(message string, playerIndex int) {
 			Sender:  gState.players[playerIndex].Username,
 		})
 }
-func (gState *hangman) JSON() ClientState {
+func (gState *hangman) JSON() interfaces.ClientState {
 	gState.mut.Lock()
 	defer gState.mut.Unlock()
 	usernames := []string{}
@@ -317,7 +320,7 @@ func (gState *hangman) JSON() ClientState {
 	return newState
 }
 
-func (gState *hangman) Players() []*Player {
+func (gState *hangman) Players() []*interfaces.Player {
 	return gState.players
 }
 
