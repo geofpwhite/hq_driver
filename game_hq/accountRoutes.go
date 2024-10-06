@@ -2,45 +2,60 @@ package hq
 
 import (
 	"accounts"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
+type LoginRequestBody struct {
+	Username, Password string
+}
+type RegisterRequestBody struct {
+	Username, Password string
+}
+type LogoutRequestBody struct {
+	UserHash string
+}
+type ResponseBody struct {
+	Success     bool   `json:"Success"`
+	AccountHash string `json:"AccountHash"`
+}
+
 func accountRoutes(r *gin.Engine, agh *accounts.AccountsGamesHandler) {
 
-	r.GET("account/register/:username/:password", func(c *gin.Context) {
-		usr, flag := c.Params.Get("username")
-		if !flag {
-			//error
-			c.AbortWithStatus(401)
-		}
-		passwd, flag := c.Params.Get("password")
-		if !flag {
-			//error
-			c.AbortWithStatus(401)
-		}
-		agh.Register(usr, passwd)
+	r.GET("register", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "register.go.tmpl", gin.H{"Title": "Register"})
 	})
-	r.GET("account/login/:username/:password", func(c *gin.Context) {
-		usr, flag := c.Params.Get("username")
-		if !flag {
-			//error
+	r.GET("login", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "login.go.tmpl", gin.H{"Title": "Login"})
+	})
+
+	r.POST("account/register/", func(c *gin.Context) {
+		registerBody := &RegisterRequestBody{}
+		c.Bind(registerBody)
+		err := agh.Register(registerBody.Username, registerBody.Password)
+		if err != nil {
 			c.AbortWithStatus(401)
+		} else {
+			c.JSON(http.StatusOK, ResponseBody{Success: true})
 		}
-		passwd, flag := c.Params.Get("password")
-		if !flag {
-			//error
-			c.AbortWithStatus(401)
-		}
-		returnHash, err := agh.Login(usr, passwd)
+
+	})
+	r.POST("account/login/", func(c *gin.Context) {
+		loginBody := &LoginRequestBody{}
+		c.Bind(loginBody)
+		fmt.Println(loginBody)
+
+		returnHash, err := agh.Login(loginBody.Username, loginBody.Password)
 		if err != nil {
 			//handle
 			c.AbortWithStatus(401)
+		} else {
+			c.JSON(http.StatusOK, ResponseBody{Success: true, AccountHash: returnHash})
 		}
-		c.String(http.StatusOK, "%s", returnHash)
 	})
-	r.GET("account/logout/:hash", func(c *gin.Context) {
+	r.POST("account/logout/:hash", func(c *gin.Context) {
 
 	})
 }

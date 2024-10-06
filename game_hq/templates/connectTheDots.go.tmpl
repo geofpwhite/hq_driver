@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+{{$s := .GridTemplate}}
+<html>
+
+<head>
+  <style>
+    .ver-0 {
+      position: relative;
+      .grid-area: ver;
+      background-color: white;
+      /*border: 2px solid black;*/
+      /* padding: 10px; */
+      width: 5px;
+      height: 50px;
+      /* text-align: center; */
+    }
+
+    .ver-1 {
+      position: relative;
+      .grid-area: ver;
+      background-color: blue;
+      /*border: 2px solid black;*/
+      /* padding: 10px; */
+      width: 5px;
+      height: 50px;
+      /* text-align: center; */
+    }
+
+    .ver-2 {
+      position: relative;
+      .grid-area: ver;
+      background-color: red;
+      /*border: 2px solid black;*/
+      /* padding: 10px; */
+      width: 5px;
+      height: 50px;
+      /* text-align: center; */
+    }
+
+    .ver-0:hover {
+      background-color: #ddd;
+    }
+
+    .cell-0 {
+      position: relative;
+      width: 50px;
+      /* padding: 10px; */
+      text-align: center;
+      gap: 10px;
+      /*border: 2px solid black;*/
+    }
+
+    .cell-1 {
+      position: relative;
+      width: 50px;
+      /* padding: 10px; */
+      text-align: center;
+      gap: 10px;
+      background-color: blue;
+      /*border: 2px solid black;*/
+    }
+
+    .cell-2 {
+      position: relative;
+      width: 50px;
+      /* padding: 10px; */
+      text-align: center;
+      gap: 10px;
+      background-color: red;
+      /*border: 2px solid black;*/
+    }
+
+    .hor-0 {
+      .grid-area: hor;
+      background-color: white;
+      /*border: 2px solid black;*/
+      /* padding: 10px; */
+      height: 5px;
+      width: 50px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hor-1 {
+      .grid-area: hor;
+      background-color: blue;
+      /*border: 2px solid black;*/
+      /* padding: 10px; */
+      height: 5px;
+      width: 50px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hor-2 {
+      .grid-area: hor;
+      background-color: red;
+      /*border: 2px solid black;*/
+      /* padding: 10px; */
+      height: 5px;
+      width: 50px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hor-0:hover {
+      background-color: #ddd;
+    }
+
+    .point {
+      .grid-area: poi;
+      background-color: #ddd;
+      /*border: 2px solid black;*/
+
+      /* padding: 10px; */
+      height: 5px;
+      width: 5px;
+      text-align: center;
+      position: relative;
+    }
+
+    .grid-container {
+      margin-left:30%;
+      height: 400px;
+      display: grid;
+      overflow: hidden;
+      grid-template-areas: "{{$s}}";
+      aspect-ratio: 1/1;
+    }
+  </style>
+
+  <script type="text/javascript">
+    function addEdge(i, j) {
+      socket.send("a:" + i + "-" + j);
+    }
+    let gamecode = window.location.href;
+    gamecode = gamecode.substring(gamecode.indexOf("ts/") + 3);
+    console.log(gamecode);
+    const socket = new WebSocket(
+      "ws://localhost:8080/connect-the-dots/ws/" + gamecode
+    );
+
+    socket.onmessage = (event) => {
+      let obj = JSON.parse(event.data);
+      let newRows = obj["Field"];
+      let i = 0;
+      let j = 0;
+      let children = document.getElementById("grid").children;
+      for (let k = 0; k < children.length; k++) {
+        if (newRows[i][j] !== 3) {
+          if (newRows[i][j] == 1) {
+            children[k].style.backgroundColor = "blue";
+          }
+          if (newRows[i][j] == 2) {
+            children[k].style.backgroundColor = "red";
+          }
+        }
+        j == 14 ? (i = (i + 1) % 15) : null;
+        j = (j + 1) % 15;
+      }
+    };
+  </script>
+</head>
+
+<body>
+{{template "navbar"}}
+  <div class="grid-container" id="grid">
+    {{$grid := .Rows}} {{range $i,$row:= $grid}} {{range $j,$num:= $row}} {{if
+    eq $num 3}}
+
+    <div class="point"></div>
+    {{else if and (eq (mod $i 2 ) 1) (eq (mod $j 2) 1) }}
+
+    <div class="cell-{{$num}}"></div>
+    {{else if and (eq (mod $i 2 ) 0) (eq (mod $j 2) 1) }}
+    <div class="hor-{{$num}}" onclick="addEdge({{$i}},{{$j}})"></div>
+    {{else if and (eq (mod $i 2 ) 1) (eq (mod $j 2) 0) }}
+    <div class="ver-{{$num}}" onclick="addEdge({{$i}},{{$j}})"></div>
+    {{end}} {{end}}{{end}}
+  </div>
+</body>
+
+</html>

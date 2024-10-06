@@ -1,7 +1,6 @@
 package connect4
 
 import (
-	"fmt"
 	"interfaces"
 	"myHash"
 	"slices"
@@ -96,8 +95,6 @@ func (c4 *connect4) JSON() interfaces.ClientState {
 	var cp [][]int = make([][]int, 8)
 	copy(cp, c4.field)
 	slices.Reverse(cp)
-	fmt.Println(cp)
-	fmt.Println(c4.field)
 	c4cs := connect4ClientState{Field: cp}
 	return c4cs
 }

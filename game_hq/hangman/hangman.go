@@ -18,12 +18,6 @@ import (
 const HOST_WINS = 1
 const HOST_LOSES = 2
 
-type hangmanInput struct {
-	inputType   interfaces.InputType
-	gameHash    string
-	playerIndex int
-}
-
 type hangmanClientState struct {
 	Players        []string  `json:"players"`
 	Turn           int       `json:"turn"`
@@ -142,15 +136,12 @@ func (gState *hangman) guess(letter rune) bool {
 				good = true
 			}
 		}
-		changedPartsOfState := hangmanClientState{GameHash: gState.gameHash}
 
 		if gState.currentWord == gState.revealedWord {
-			changedPartsOfState.NeedNewWord = true
 			gState.needNewWord = true
 			gState.turn = (gState.curHostIndex + 2) % len(gState.players)
 			gState.curHostIndex = (gState.curHostIndex + 1) % len(gState.players)
 			gState.winner = HOST_LOSES
-			changedPartsOfState.Host, changedPartsOfState.Turn = gState.curHostIndex, gState.turn
 		} else if gState.guessesLeft == 1 && !good {
 			gState.needNewWord = true
 			gState.turn = (gState.curHostIndex + 2) % len(gState.players)
@@ -206,7 +197,6 @@ func (gState *hangman) newWord(word string) {
 	x, _ := gState.wordCheck.Query("select word from words where word='" + word + "'")
 	result := ""
 	if x.Next() {
-
 		x.Scan(&result)
 		if result == "" {
 			return

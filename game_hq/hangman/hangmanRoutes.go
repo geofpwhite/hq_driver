@@ -75,7 +75,6 @@ func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 			var gameHash string
 			for i, g := range games {
 				if reflect.TypeOf(*g) == reflect.TypeOf(&hangman{}) {
-
 					for _, p := range (*g).(*hangman).Players() {
 						if p.PlayerHash == hash {
 							gameHash = i
