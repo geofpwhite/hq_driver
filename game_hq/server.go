@@ -3,6 +3,7 @@ package hq
 import (
 	"accounts"
 	connectthedots "hq/connectTheDots"
+	tictactoe "hq/ticTacToe"
 	"html/template"
 	"interfaces"
 	"net/http"
@@ -43,6 +44,7 @@ func serve(inputChannel chan interfaces.Input, games map[string]*interfaces.Game
 	hangman.HangmanRoutes(r, &upgrader, games, playerHashes, inputChannel)
 	connect4.Connect4Routes(r, &upgrader, games, playerHashes, inputChannel)
 	connectthedots.ConnectTheDotsRoutes(r, &upgrader, games, playerHashes, inputChannel)
+	tictactoe.TicTacToeRoutes(r, &upgrader, games, playerHashes, inputChannel)
 	accountRoutes(r, accounts.NewAccountsGamesHandler())
 
 	r.Run("0.0.0.0:8080")

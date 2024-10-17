@@ -2,13 +2,12 @@ package hangman
 
 import (
 	"fmt"
+	"interfaces"
+	"myHash"
 	"net/http"
 	"reflect"
 	"slices"
 	"strconv"
-
-	"interfaces"
-	"myHash"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -55,7 +54,6 @@ func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println(2)
 			conn.Close()
 			return
 		}
@@ -155,9 +153,7 @@ func handleWebSocketHangman(
 
 	}
 	// gState.connections = append(gState.connections, conn)
-	defer func() {
-		conn.Close()
-	}()
+	defer conn.Close()
 	usernames := []string{}
 	for _, p := range gState.players {
 		usernames = append(usernames, p.Username)

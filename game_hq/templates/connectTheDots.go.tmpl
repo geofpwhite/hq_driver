@@ -165,12 +165,12 @@
 <body>
 {{template "navbar"}}
   <div class="grid-container" id="grid">
-    {{$grid := .Rows}} {{range $i,$row:= $grid}} {{range $j,$num:= $row}} {{if
-    eq $num 3}}
-
+    {{$grid := .Rows}} 
+    {{range $i,$row:= $grid}} 
+    {{range $j,$num:= $row}} 
+    {{if eq $num 3}}
     <div class="point"></div>
     {{else if and (eq (mod $i 2 ) 1) (eq (mod $j 2) 1) }}
-
     <div class="cell-{{$num}}"></div>
     {{else if and (eq (mod $i 2 ) 0) (eq (mod $j 2) 1) }}
     <div class="hor-{{$num}}" onclick="addEdge({{$i}},{{$j}})"></div>

@@ -2,17 +2,19 @@ package tictactoe
 
 import (
 	"interfaces"
+	"myHash"
 	"sync"
 )
 
 const X, O = 1, 2
 
 type ticTacToe struct {
-	mut     *sync.Mutex
-	field   [3][3]int
-	turn    int
-	players [2]*interfaces.Player
-	scores  [2]int
+	mut         *sync.Mutex
+	field       [3][3]int
+	turn        int
+	players     [2]*interfaces.Player
+	scores      [2]int
+	playersSize int
 }
 
 type ticTacToeClientState struct {
@@ -21,19 +23,21 @@ type ticTacToeClientState struct {
 	Scores [2]int    `json:"Scores"`
 }
 
-func NewGameTicTacToe() *ticTacToe {
+func NewGameTicTacToe() (*ticTacToe, string) {
+
 	gState := &ticTacToe{
 		field:  [3][3]int{},
-		turn:   0,
+		turn:   1,
 		mut:    &sync.Mutex{},
 		scores: [2]int{},
 	}
-	return gState
+	return gState, myHash.Hash(6)
 }
 
+// reset will only be called by the move() function, so we shan't Lock the mutex
 func (gState *ticTacToe) reset() {
 	gState.field = [3][3]int{}
-	gState.turn = 1
+	gState.turn = X
 }
 
 func (gState *ticTacToe) move(x, y, team int) {
@@ -51,6 +55,7 @@ func (gState *ticTacToe) move(x, y, team int) {
 	}
 }
 
+// scan will only be called by move(), so no mut.Lock
 func (gState *ticTacToe) scan() bool {
 	//horizontal
 	//00,01,02
@@ -94,5 +99,23 @@ func (gState *ticTacToe) JSON() interfaces.ClientState {
 }
 
 func (gState *ticTacToe) Players() []*interfaces.Player {
-	return append([]*interfaces.Player{}, gState.players[0], gState.players[1])
+	players := []*interfaces.Player{}
+	if gState.players[0] != nil {
+		players = append(players, gState.players[0])
+	}
+	if gState.players[1] != nil {
+		players = append(players, gState.players[1])
+	}
+	return players
+}
+
+func (gState *ticTacToe) newPlayer(p interfaces.Player) int {
+	gState.mut.Lock()
+	defer gState.mut.Unlock()
+	if gState.playersSize < 2 {
+		gState.players[gState.playersSize] = &p
+		gState.playersSize++
+		return gState.playersSize - 1
+	}
+	return -1
 }

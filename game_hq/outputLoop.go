@@ -16,7 +16,9 @@ func outputLoop(outputChannel chan string, games map[string]*interfaces.Game, pl
 		json = game.JSON()
 		for _, p := range game.Players() {
 			conn = playerHashes[(*p).PlayerHash]
-			conn.WriteJSON(json)
+			if err := conn.WriteJSON(json); err != nil {
+				continue
+			}
 		}
 	}
 }

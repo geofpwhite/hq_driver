@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect 4 Grid</title>
+  <script type="text/javascript">
+    let gamecode = window.location.href;
+    gamecode = gamecode.substring(gamecode.indexOf("toe/") + 4);
+    console.log(gamecode);
+    const socket = new WebSocket("ws://localhost:8080/tictactoe/ws/" + gamecode);
+    
+    function move(x,y) {
+      str = ""+x+""+y+""
+      socket.send(str);
+    }
+    socket.onmessage = (event) => {
+      let obj = JSON.parse(event.data);
+      let ary = obj["Field"]
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          let tag = document.getElementById(i + "-" + j);
+          ary[i][j] == 1
+            ? tag.innerText = "X"
+            : ary[i][j] == 2
+              ? tag.innerText="O"
+              : tag.innerText=""
+        }
+      }
+    };
+  </script>
+
+  <style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 10px;
+    }
+
+    .cell-0 {
+      background-color: white;
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      text-align: center;
+      line-height: 50px;
+    }
+
+    .cell-1 {
+      background-color: blue;
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      text-align: center;
+      line-height: 50px;
+    }
+
+    .cell-2 {
+      background-color: red;
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      text-align: center;
+      line-height: 50px;
+    }
+
+    .button {
+      background-color: white;
+      border-radius: 25px;
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      text-align: center;
+      line-height: 50px;
+    }
+
+    #mydiv {
+      position: absolute;
+      z-index: 9;
+      background-color: #f1f1f1;
+      border: 1px solid #d3d3d3;
+      text-align: center;
+      width: 250px;
+      position: absolute;
+      right: 50%;
+      top: 80%;
+    }
+
+    #mydivheader {
+      padding: 10px;
+      cursor: move;
+      z-index: 10;
+      background-color: #2196f3;
+      color: #fff;
+    }
+  </style>
+</head>
+
+
+
+<body>
+  {{template "navbar" .}}
+  <div style="margin-left:50%;">
+    <div id="mydiv">
+      <div id="mydivheader">Click here to move</div>
+      <div style="
+          font-weight: bold;
+          text-align: right;
+          position: absolute;
+          bottom: 50px;
+          right: 50px;
+        ">
+        <div id="grid" class="grid">
+          {{ range $i,$row := .Rows }}
+          {{ range $j,$col := $row }}
+          <div id="{{$i}}-{{$j}}" class="cell-0" onclick="move({{$i}},{{$j}})"></div>
+          {{ end }}
+          {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
+<script type="text/javascript">
+
+  function dragElement(elmnt) {
+    let pos1 = 0,
+      pos2 = 0,
+      pos3 = 0,
+      pos4 = 0;
+
+    if (document.getElementById("mydivheader")) {
+      // If present, the header is where you move the DIV from
+      document.getElementById("mydivheader").onmousedown = dragMouseDown;
+    } else {
+      // Otherwise, move the DIV from anywhere inside the DIV
+      elmnt.onmousedown = dragMouseDown;
+    }
+
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // Get the mouse cursor position at startup
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // Call a function whenever the cursor moves
+      document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // Calculate the new cursor position
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // Set the element's new position
+      elmnt.style.top = elmnt.offsetTop - pos2 + "px";
+      elmnt.style.left = elmnt.offsetLeft - pos1 + "px";
+    }
+
+    function closeDragElement() {
+      // Stop moving when the mouse button is released
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+  }
+  dragElement(document.getElementById("mydiv"))
+
+</script>

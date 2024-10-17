@@ -80,7 +80,7 @@ func newGameHangman() *hangman {
 /*
 starts a ticker that either times out the current turn and increments it, or resets back to 0 on user input
 */
-func (gState *hangman) runTicker(timeoutChannel chan string, inputChannel chan interfaces.Input, closeGameChannel chan string) {
+func (gState *hangman) runTicker(timeoutChannel chan<- string, inputChannel chan interfaces.Input, closeGameChannel chan<- string) {
 	ticker := time.NewTicker(60 * time.Second)
 	gState.consecutiveTimeouts = 0
 	defer ticker.Stop()
@@ -194,7 +194,7 @@ func (gState *hangman) newWord(word string) {
 			return
 		}
 	}
-	x, _ := gState.wordCheck.Query("select word from words where word='" + word + "'")
+	x, _ := gState.wordCheck.Query("select word from words where word like'" + word + "%'")
 	result := ""
 	if x.Next() {
 		x.Scan(&result)
@@ -234,6 +234,7 @@ func (gState *hangman) removePlayer(playerIndex int) {
 	defer gState.mut.Unlock()
 	gState.players = slices.Delete(gState.players, playerIndex, playerIndex+1)
 	if len(gState.players) == 0 {
+		gState.closeGame()
 		return
 	}
 	gState.turn = gState.turn % len(gState.players)

@@ -56,12 +56,7 @@ func (c4i *connect4RotateInput) PlayerIndex() int {
 
 // -------------------------//
 type connect4ClientState struct {
-	GameHash string  `json:"GameHash"`
-	Field    [][]int `json:"Field"`
-}
-
-func (c4cs *connect4ClientState) Game() string {
-	return c4cs.GameHash
+	Field [][]int `json:"Field"`
 }
 
 // --------------------------------------------------------//
