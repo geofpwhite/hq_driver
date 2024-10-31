@@ -1,8 +1,8 @@
 package connect4
 
 import (
-	"interfaces"
-	"myHash"
+	interfaces "hq/interfaces"
+	myHash "hq/myHash"
 	"slices"
 	"sync"
 )

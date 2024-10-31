@@ -1,6 +1,6 @@
 package hangman
 
-import "interfaces"
+import interfaces "hq/interfaces"
 
 type usernameInput struct {
 	username    string

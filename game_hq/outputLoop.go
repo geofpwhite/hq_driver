@@ -1,7 +1,7 @@
 package hq
 
 import (
-	"interfaces"
+	interfaces "hq/interfaces"
 
 	"github.com/gorilla/websocket"
 )

@@ -3,7 +3,4 @@ go 1.22.2
 use (
 	.
 	./game_hq
-	./game_hq/accountDB
-	./game_hq/interfaces
-	./game_hq/myHash
 )

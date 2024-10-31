@@ -1,8 +1,8 @@
 package connectthedots
 
 import (
-	"interfaces"
-	"myHash"
+	interfaces "hq/interfaces"
+	myHash "hq/myHash"
 )
 
 const EMPTY, BLUE, RED, POINT = 0, 1, 2, 3

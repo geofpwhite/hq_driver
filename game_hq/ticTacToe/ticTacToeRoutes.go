@@ -1,8 +1,8 @@
 package tictactoe
 
 import (
-	"interfaces"
-	"myHash"
+	interfaces "hq/interfaces"
+	myHash "hq/myHash"
 	"net/http"
 	"strconv"
 

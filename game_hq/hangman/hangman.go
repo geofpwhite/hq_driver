@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"interfaces"
-	"myHash"
+	interfaces "hq/interfaces"
+	myHash "hq/myHash"
 
 	_ "github.com/mattn/go-sqlite3"
 )

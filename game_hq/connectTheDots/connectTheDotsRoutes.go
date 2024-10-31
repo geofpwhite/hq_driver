@@ -1,8 +1,8 @@
 package connectthedots
 
 import (
-	"interfaces"
-	"myHash"
+	interfaces "hq/interfaces"
+	myHash "hq/myHash"
 	"net/http"
 	"slices"
 	"strconv"

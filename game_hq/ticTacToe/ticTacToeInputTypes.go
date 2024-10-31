@@ -1,6 +1,6 @@
 package tictactoe
 
-import "interfaces"
+import interfaces "hq/interfaces"
 
 type moveInput struct {
 	gameHash    string

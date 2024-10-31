@@ -1,6 +1,6 @@
 package connectthedots
 
-import "interfaces"
+import interfaces "hq/interfaces"
 
 type connectTheDotsAddEdgeInput struct {
 	team        int

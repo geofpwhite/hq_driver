@@ -1,8 +1,8 @@
 package hq
 
 import (
-	"accounts"
 	"fmt"
+	accounts "hq/accountDB"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

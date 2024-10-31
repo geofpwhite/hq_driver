@@ -1,11 +1,11 @@
 package hq
 
 import (
-	"accounts"
+	accounts "hq/accountDB"
 	connectthedots "hq/connectTheDots"
+	interfaces "hq/interfaces"
 	tictactoe "hq/ticTacToe"
 	"html/template"
-	"interfaces"
 	"net/http"
 
 	connect4 "hq/connect4"

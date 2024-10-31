@@ -2,13 +2,13 @@ package connect4
 
 import (
 	"fmt"
-	"myHash"
+	myHash "hq/myHash"
 	"net/http"
 	"slices"
 	"strconv"
 	"strings"
 
-	"interfaces"
+	interfaces "hq/interfaces"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

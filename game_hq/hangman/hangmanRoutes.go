@@ -2,8 +2,8 @@ package hangman
 
 import (
 	"fmt"
-	"interfaces"
-	"myHash"
+	interfaces "hq/interfaces"
+	myHash "hq/myHash"
 	"net/http"
 	"reflect"
 	"slices"
