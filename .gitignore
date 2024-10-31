@@ -1,3 +1,6 @@
 /.vscode
 /build_hangman
 main.exe
+main.exe
+accounts.db
+app.exe

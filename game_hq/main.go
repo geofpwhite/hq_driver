@@ -1,18 +1,19 @@
-package hq
+package main
 
 import (
+	engine "hq/engine"
 	interfaces "hq/interfaces"
 
 	"github.com/gorilla/websocket"
 )
 
-func Main() {
+func main() {
 
 	var games map[string]interfaces.Game = make(map[string]interfaces.Game)
 	var playerHashes map[string]*websocket.Conn = make(map[string]*websocket.Conn)
 	inputChannel := make(chan interfaces.Input)
 	outputChannel := make(chan string)
-	go serve(inputChannel, games, playerHashes)
-	go outputLoop(outputChannel, games, playerHashes)
-	gameLoop(inputChannel, outputChannel, games)
+	go engine.Serve(inputChannel, games, playerHashes)
+	go engine.OutputLoop(outputChannel, games, playerHashes)
+	engine.GameLoop(inputChannel, outputChannel, games)
 }
