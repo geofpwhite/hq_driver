@@ -24,7 +24,6 @@ type ticTacToeClientState struct {
 }
 
 func NewGameTicTacToe() (*ticTacToe, string) {
-
 	gState := &ticTacToe{
 		field:  [3][3]int{},
 		turn:   1,
@@ -55,31 +54,28 @@ func (gState *ticTacToe) move(x, y, team int) {
 	}
 }
 
+var possibleTicTacToes = [8][3][2]int{
+	{
+		{0, 0}, {0, 1}, {0, 2},
+	}, {
+		{1, 0}, {1, 1}, {1, 2},
+	}, {
+		{2, 0}, {2, 1}, {2, 2},
+	}, {
+		{0, 0}, {1, 0}, {2, 0},
+	}, {
+		{0, 1}, {1, 1}, {2, 1},
+	}, {
+		{0, 2}, {1, 2}, {2, 2},
+	}, {
+		{0, 0}, {1, 1}, {2, 2},
+	}, {
+		{0, 2}, {1, 1}, {2, 0},
+	},
+}
+
 // scan will only be called by move(), so no mut.Lock
 func (gState *ticTacToe) scan() bool {
-	//horizontal
-	//00,01,02
-	//10,11,12
-	//20,21,22
-	possibleTicTacToes := [][3][2]int{
-		{
-			{0, 0}, {0, 1}, {0, 2},
-		}, {
-			{1, 0}, {1, 1}, {1, 2},
-		}, {
-			{2, 0}, {2, 1}, {2, 2},
-		}, {
-			{0, 0}, {1, 0}, {2, 0},
-		}, {
-			{0, 1}, {1, 1}, {2, 1},
-		}, {
-			{0, 2}, {1, 2}, {2, 2},
-		}, {
-			{0, 0}, {1, 1}, {2, 2},
-		}, {
-			{0, 2}, {1, 1}, {2, 0},
-		},
-	}
 	for _, streak := range possibleTicTacToes {
 		if gState.field[streak[0][0]][streak[0][1]] != 0 &&
 			gState.field[streak[0][0]][streak[0][1]] == gState.field[streak[1][0]][streak[1][1]] &&

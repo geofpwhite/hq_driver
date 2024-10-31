@@ -22,10 +22,10 @@ type connect4RotateInput struct {
 	playerIndex int
 }
 
-func (c4i *connect4InsertInput) ChangeState(gameObj *interfaces.Game) {
-	c4 := (*gameObj).(*connect4)
+func (c4i *connect4InsertInput) ChangeState(gameObj interfaces.Game) {
+	c4 := (gameObj).(*connect4)
 	c4.Insert(c4i.team, c4i.column)
-	_, y := c4.scanForConnect4()
+	y := c4.scanForConnect4()
 	if len(y) > 0 {
 		c4.Clear()
 	}
@@ -38,10 +38,10 @@ func (c4i *connect4InsertInput) PlayerIndex() int {
 	return c4i.playerIndex
 }
 
-func (c4i *connect4RotateInput) ChangeState(gameObj *interfaces.Game) {
-	c4 := (*gameObj).(*connect4)
+func (c4i *connect4RotateInput) ChangeState(gameObj interfaces.Game) {
+	c4 := (gameObj).(*connect4)
 	c4.Rotate()
-	_, y := c4.scanForConnect4()
+	y := c4.scanForConnect4()
 	if len(y) > 0 {
 		c4.Clear()
 	}
@@ -120,7 +120,10 @@ func (c4 *connect4) Insert(team, row int) bool {
 
 func (c4 *connect4) Rotate() {
 	c4.mut.Lock()
-	defer func() { c4.mut.Unlock(); c4.Fall() }()
+	defer func() {
+		c4.mut.Unlock()
+		c4.Fall()
+	}()
 
 	size := len(c4.field)
 	newField := make([][]int, size)
@@ -158,11 +161,10 @@ type queueElement struct {
 }
 
 // rotating may cause both players to have
-func (c4 *connect4) scanForConnect4() (int, map[queueElement]bool) {
+func (c4 *connect4) scanForConnect4() map[queueElement]bool {
 
 	c4.mut.Lock()
 	defer c4.mut.Unlock()
-	winner := EMPTY
 	winners := map[queueElement]bool{}
 	coordinateQueue := []queueElement{}
 	for i, num := range c4.field[0] {
@@ -218,5 +220,5 @@ func (c4 *connect4) scanForConnect4() (int, map[queueElement]bool) {
 			}
 		}
 	}
-	return winner, winners
+	return winners
 }

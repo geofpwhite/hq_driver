@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
+func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
 	r.Static("/hangman_game/", "./build_hangman/")
 	r.GET("/hangman/ws/:gameHash", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -29,7 +29,7 @@ func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 	r.GET("/hangman/new_game", func(c *gin.Context) {
 		gState := newGameHangman()
 		var game interfaces.Game = gState
-		games[gState.gameHash] = &game
+		games[gState.gameHash] = game
 		// newTickerInputChannel := make(chan (inputInfo))
 		// tickerInputChannels[gState.gameHash] = newTickerInputChannel
 		// go (*gState).runTicker(tickerTimeoutChannel, newTickerInputChannel, closeGameChannel)
@@ -72,8 +72,8 @@ func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 		} else {
 			var gameHash string
 			for i, g := range games {
-				if reflect.TypeOf(*g) == reflect.TypeOf(&hangman{}) {
-					for _, p := range (*g).(*hangman).Players() {
+				if reflect.TypeOf(g) == reflect.TypeOf(&hangman{}) {
+					for _, p := range (g).(*hangman).Players() {
 						if p.PlayerHash == hash {
 							gameHash = i
 						}
@@ -92,7 +92,7 @@ func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 		if _player == nil || games[gameHash] == nil {
 			return
 		}
-		playerIndex := slices.IndexFunc((*games[gameHash]).(*hangman).players, func(p *interfaces.Player) bool { return p.PlayerHash == playerHash })
+		playerIndex := slices.IndexFunc((games[gameHash]).(*hangman).players, func(p *interfaces.Player) bool { return p.PlayerHash == playerHash })
 
 		delete(playerHashes, playerHash)
 		inputChannel <- &exitGameInput{gameHash, playerIndex}
@@ -101,12 +101,12 @@ func HangmanRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string
 func handleWebSocketHangman(
 	conn *websocket.Conn,
 	inputChannel chan interfaces.Input,
-	gameObj *interfaces.Game,
+	gameObj interfaces.Game,
 	reconnect bool,
 	hash string,
 	playerHashes map[string]*websocket.Conn,
 ) {
-	gState := (*gameObj).(*hangman)
+	gState := (gameObj).(*hangman)
 	var playerIndex int
 	if reconnect {
 		conn2 := playerHashes[hash]

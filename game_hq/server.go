@@ -8,8 +8,8 @@ import (
 	"interfaces"
 	"net/http"
 
-	"connect4"
-	"hangman"
+	connect4 "hq/connect4"
+	hangman "hq/hangman"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -20,7 +20,7 @@ func mod(a, b int) int {
 }
 
 // nastiest part of the system.
-func serve(inputChannel chan interfaces.Input, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn) {
+func serve(inputChannel chan interfaces.Input, games map[string]interfaces.Game, playerHashes map[string]*websocket.Conn) {
 
 	var upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,

@@ -16,7 +16,7 @@ interface for each game type's user input object to implement
 type Input interface {
 	GameHash() string
 	PlayerIndex() int
-	ChangeState(*Game)
+	ChangeState(Game)
 }
 
 type Player struct {

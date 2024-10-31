@@ -14,7 +14,7 @@ func (mi *moveInput) GameHash() string {
 func (mi *moveInput) PlayerIndex() int {
 	return mi.playerIndex
 }
-func (mi *moveInput) ChangeState(gameObj *interfaces.Game) {
-	gState := (*gameObj).(*ticTacToe)
+func (mi *moveInput) ChangeState(gameObj interfaces.Game) {
+	gState := gameObj.(*ticTacToe)
 	gState.move(mi.x, mi.y, mi.team)
 }

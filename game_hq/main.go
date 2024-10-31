@@ -8,7 +8,7 @@ import (
 
 func Main() {
 
-	var games map[string]*interfaces.Game = make(map[string]*interfaces.Game)
+	var games map[string]interfaces.Game = make(map[string]interfaces.Game)
 	var playerHashes map[string]*websocket.Conn = make(map[string]*websocket.Conn)
 	inputChannel := make(chan interfaces.Input)
 	outputChannel := make(chan string)

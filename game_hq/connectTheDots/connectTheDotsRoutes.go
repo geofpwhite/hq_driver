@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
+func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
 	r.GET("/connect-the-dots", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_screen_connectTheDots.go.tmpl", gin.H{})
 	})
@@ -25,7 +25,7 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 		for range 14 {
 			str += " auto"
 		}
-		c.HTML(http.StatusOK, "connectTheDots.go.tmpl", gin.H{"Rows": (*games[gameHash]).(*connectTheDots).field, "SizeInt": 8, "GridTemplate": str, "SizeGrid": [7]int{}})
+		c.HTML(http.StatusOK, "connectTheDots.go.tmpl", gin.H{"Rows": (games[gameHash]).(*connectTheDots).field, "SizeInt": 8, "GridTemplate": str, "SizeGrid": [7]int{}})
 	})
 	r.GET("/connect-the-dots-test", func(c *gin.Context) {
 		str := "auto"
@@ -38,7 +38,7 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 	r.GET("/connect-the-dots/new_game", func(c *gin.Context) {
 		c4, hash := NewGameConnectTheDots(8)
 		var g interfaces.Game = c4
-		games[hash] = &g
+		games[hash] = g
 		c.JSON(200, hash)
 	})
 	r.GET("/connect-the-dots/reconnect/:gameHash/:playerHash", func(c *gin.Context) {})
@@ -48,7 +48,7 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 		if err != nil || !b {
 			panic("/hangman/ws/:gameHash gave an error")
 		}
-		gameObj := *games[gameHash]
+		gameObj := games[gameHash]
 		game := gameObj.(*connectTheDots)
 		playerHash := myHash.Hash(10)
 		playerHashes[playerHash] = conn

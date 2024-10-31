@@ -10,17 +10,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func TicTacToeRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
+func TicTacToeRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
 	r.GET("/tictactoe", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_screen_tictactoe.go.tmpl", gin.H{})
 	})
-	r.GET("/tictactoe/teamRequest/:gameHash")
 	r.GET("/tictactoe/:gameHash", func(c *gin.Context) {
 		gameHash, b := c.Params.Get("gameHash")
 		if !b {
 			return
 		}
-		c.HTML(http.StatusOK, "tictactoe.go.tmpl", gin.H{"Rows": (*games[gameHash]).(*ticTacToe).field})
+		c.HTML(http.StatusOK, "tictactoe.go.tmpl", gin.H{"Rows": (games[gameHash]).(*ticTacToe).field})
 	})
 	r.GET("/tictactoe/ws/:gameHash", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -36,7 +35,7 @@ func TicTacToeRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[stri
 	r.GET("/tictactoe/new_game", func(c *gin.Context) {
 		gState, hash := NewGameTicTacToe()
 		var game interfaces.Game = gState
-		games[hash] = &game
+		games[hash] = game
 		c.JSON(200, struct {
 			GameHash string `json:"gameHash"`
 			Team     int    `json:"team"`
@@ -47,13 +46,13 @@ func TicTacToeRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[stri
 
 func handleWebSocketTicTacToe(conn *websocket.Conn,
 	inputChannel chan<- interfaces.Input,
-	gameObj *interfaces.Game,
+	gameObj interfaces.Game,
 	reconnect bool,
 	hash string,
 	playerHashes map[string]*websocket.Conn,
 	gameHash string,
 ) {
-	gState := (*gameObj).(*ticTacToe)
+	gState := (gameObj).(*ticTacToe)
 	var playerIndex int
 
 	if reconnect {
@@ -72,7 +71,7 @@ func handleWebSocketTicTacToe(conn *websocket.Conn,
 	for {
 		messageType, msg, err := conn.ReadMessage()
 		if err != nil {
-			continue
+			return
 		}
 		if messageType == websocket.TextMessage {
 			x, _ := strconv.Atoi(string(msg[0]))

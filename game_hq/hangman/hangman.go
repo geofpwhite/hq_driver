@@ -80,11 +80,11 @@ func newGameHangman() *hangman {
 /*
 starts a ticker that either times out the current turn and increments it, or resets back to 0 on user input
 */
-func (gState *hangman) runTicker(timeoutChannel chan<- string, inputChannel chan interfaces.Input, closeGameChannel chan<- string) {
+func (gState *hangman) runTicker(timeoutChannel chan<- string, inputChannel <-chan interfaces.Input, closeGameChannel chan<- string) {
 	ticker := time.NewTicker(60 * time.Second)
 	gState.consecutiveTimeouts = 0
 	defer ticker.Stop()
-	defer close(inputChannel) // this may be bad practice to close from the reader side but
+	// defer close(inputChannel) // this may be bad practice to close from the reader side but
 
 	for {
 		select {
@@ -136,7 +136,8 @@ func (gState *hangman) guess(letter rune) bool {
 				good = true
 			}
 		}
-
+		x := 0x10p23
+		print(x)
 		if gState.currentWord == gState.revealedWord {
 			gState.needNewWord = true
 			gState.turn = (gState.curHostIndex + 2) % len(gState.players)
@@ -194,7 +195,7 @@ func (gState *hangman) newWord(word string) {
 			return
 		}
 	}
-	x, _ := gState.wordCheck.Query("select word from words where word like'" + word + "%'")
+	x, _ := gState.wordCheck.Query("select word from words where word ='" + word + "'")
 	result := ""
 	if x.Next() {
 		x.Scan(&result)

@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]*interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
+func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[string]interfaces.Game, playerHashes map[string]*websocket.Conn, inputChannel chan interfaces.Input) {
 	r.GET("/connect4/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_screen_connect4.go.tmpl", gin.H{})
 	})
@@ -24,7 +24,7 @@ func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 		if err != nil || !b {
 			panic("/hangman/ws/:gameHash gave an error")
 		}
-		gameObj := *games[gameHash]
+		gameObj := games[gameHash]
 		game := gameObj.(*connect4)
 		playerHash := myHash.Hash(10)
 		playerHashes[playerHash] = conn
@@ -73,7 +73,7 @@ func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 	r.GET("/connect4/new_game", func(c *gin.Context) {
 		c4, hash := newGameConnect4()
 		var g interfaces.Game = c4
-		games[hash] = &g
+		games[hash] = g
 		c.JSON(200, hash)
 	})
 	r.GET("/connect4/:gameHash", func(c *gin.Context) {
@@ -85,7 +85,7 @@ func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 		if !b {
 			return
 		}
-		game := (*games[gameHash]).(*connect4)
+		game := (games[gameHash]).(*connect4)
 		fmt.Println(game)
 		rows := make([][]string, 8)
 		for i := range rows {

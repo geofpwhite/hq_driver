@@ -42,10 +42,10 @@ func NewGameConnectTheDots(size int) (*connectTheDots, string) {
 }
 
 func (ctd *connectTheDots) addEdge(coord [2]int, team int) {
-	// if team != ctd.turn {
-	// 	println("not your turn")
-	// 	return
-	// }
+	if team != ctd.turn {
+		println("not your turn")
+		return
+	}
 	if coord[0] >= ctd.size*2 ||
 		coord[1] >= ctd.size*2 ||
 		coord[0] < 0 ||

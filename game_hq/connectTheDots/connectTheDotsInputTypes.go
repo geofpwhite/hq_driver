@@ -15,6 +15,6 @@ func (ctdaei *connectTheDotsAddEdgeInput) GameHash() string {
 func (ctdaei *connectTheDotsAddEdgeInput) PlayerIndex() int {
 	return ctdaei.playerIndex
 }
-func (ctdaei *connectTheDotsAddEdgeInput) ChangeState(gameObj *interfaces.Game) {
-	(*gameObj).(*connectTheDots).addEdge(ctdaei.coords, ctdaei.team)
+func (ctdaei *connectTheDotsAddEdgeInput) ChangeState(gameObj interfaces.Game) {
+	(gameObj).(*connectTheDots).addEdge(ctdaei.coords, ctdaei.team)
 }
