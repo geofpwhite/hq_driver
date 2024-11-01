@@ -15,6 +15,7 @@ func (mi *moveInput) PlayerIndex() int {
 	return mi.playerIndex
 }
 func (mi *moveInput) ChangeState(gameObj interfaces.Game) {
-	gState := gameObj.(*ticTacToe)
-	gState.move(mi.x, mi.y, mi.team)
+	if gState, ok := gameObj.(*ticTacToe); ok {
+		gState.move(mi.x, mi.y, mi.team)
+	}
 }

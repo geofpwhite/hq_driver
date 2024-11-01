@@ -22,14 +22,14 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 			panic("no game hash")
 		}
 		str := "auto"
-		for range 14 {
+		for i := 0; i < 14; i++ {
 			str += " auto"
 		}
 		c.HTML(http.StatusOK, "connectTheDots.go.tmpl", gin.H{"Rows": (games[gameHash]).(*connectTheDots).field, "SizeInt": 8, "GridTemplate": str, "SizeGrid": [7]int{}})
 	})
 	r.GET("/connect-the-dots-test", func(c *gin.Context) {
 		str := "auto"
-		for range 14 {
+		for i := 0; i < 14; i++ {
 			str += " auto"
 		}
 		c.HTML(http.StatusOK, "connectTheDots.go.tmpl", gin.H{"Rows": [15][15]int{}, "SizeInt": 8, "GridTemplate": str, "SizeGrid": [7]int{}})

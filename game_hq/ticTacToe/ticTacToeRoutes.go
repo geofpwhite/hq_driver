@@ -52,32 +52,33 @@ func handleWebSocketTicTacToe(conn *websocket.Conn,
 	playerHashes map[string]*websocket.Conn,
 	gameHash string,
 ) {
-	gState := (gameObj).(*ticTacToe)
-	var playerIndex int
+	if gState, ok := gameObj.(*ticTacToe); ok {
+		var playerIndex int
 
-	if reconnect {
+		if reconnect {
 
-	} else {
-		if gState.playersSize > 1 {
-			return
+		} else {
+			if gState.playersSize > 1 {
+				return
+			}
+			playerIndex = gState.playersSize
+			hash = myHash.Hash(10)
+			newPlayer := interfaces.Player{Username: "Player " + strconv.Itoa(playerIndex), PlayerHash: hash}
+			playerIndex = gState.newPlayer(newPlayer)
+			playerHashes[hash] = conn
 		}
-		playerIndex = gState.playersSize
-		hash = myHash.Hash(10)
-		newPlayer := interfaces.Player{Username: "Player " + strconv.Itoa(playerIndex), PlayerHash: hash}
-		playerIndex = gState.newPlayer(newPlayer)
-		playerHashes[hash] = conn
-	}
-	defer conn.Close()
-	for {
-		messageType, msg, err := conn.ReadMessage()
-		if err != nil {
-			return
-		}
-		if messageType == websocket.TextMessage {
-			x, _ := strconv.Atoi(string(msg[0]))
-			y, _ := strconv.Atoi(string(msg[1]))
-			mi := moveInput{gameHash: gameHash, x: x, y: y, team: playerIndex + 1, playerIndex: playerIndex}
-			inputChannel <- &mi
+		defer conn.Close()
+		for {
+			messageType, msg, err := conn.ReadMessage()
+			if err != nil {
+				return
+			}
+			if messageType == websocket.TextMessage {
+				x, _ := strconv.Atoi(string(msg[0]))
+				y, _ := strconv.Atoi(string(msg[1]))
+				mi := moveInput{gameHash: gameHash, x: x, y: y, team: playerIndex + 1, playerIndex: playerIndex}
+				inputChannel <- &mi
+			}
 		}
 	}
 }

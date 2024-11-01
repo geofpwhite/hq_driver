@@ -106,36 +106,61 @@ func handleWebSocketHangman(
 	hash string,
 	playerHashes map[string]*websocket.Conn,
 ) {
-	gState := (gameObj).(*hangman)
-	var playerIndex int
-	if reconnect {
-		conn2 := playerHashes[hash]
-		if conn2 != nil {
-			if err := conn2.Close(); err != nil {
-				fmt.Println(err)
+	if gState, ok := gameObj.(*hangman); ok {
+
+		var playerIndex int
+		if reconnect {
+			conn2 := playerHashes[hash]
+			if conn2 != nil {
+				if err := conn2.Close(); err != nil {
+					fmt.Println(err)
+				}
+				playerIndex = slices.IndexFunc(gState.players, func(p *interfaces.Player) bool { return p.PlayerHash == hash })
+				if playerIndex == -1 {
+					conn.WriteJSON(hangmanClientState{Hash: "undefined", Warning: "2"})
+					conn.Close()
+					return
+				}
+				playerHashes[hash] = conn
 			}
-			playerIndex = slices.IndexFunc(gState.players, func(p *interfaces.Player) bool { return p.PlayerHash == hash })
-			if playerIndex == -1 {
-				conn.WriteJSON(hangmanClientState{Hash: "undefined", Warning: "2"})
-				conn.Close()
-				return
+
+		} else {
+			playerIndex = len(gState.players)
+			playerHash := myHash.Hash(32)
+			hash = playerHash
+			newPlayer := interfaces.Player{Username: "Player " + strconv.Itoa(playerIndex+1), PlayerHash: playerHash}
+			gState.newPlayer(newPlayer)
+
+			playerHashes[playerHash] = conn
+			usernames := []string{}
+			for _, p := range gState.players {
+				usernames = append(usernames, p.Username)
 			}
-			playerHashes[hash] = conn
+			conn.WriteJSON(hangmanClientState{
+				Players:        usernames,
+				Turn:           gState.turn,
+				Host:           gState.curHostIndex,
+				RevealedWord:   gState.revealedWord,
+				GuessesLeft:    gState.guessesLeft,
+				LettersGuessed: gState.guessed,
+				NeedNewWord:    gState.needNewWord,
+				Warning:        "",
+				PlayerIndex:    playerIndex,
+				Winner:         gState.winner,
+				GameHash:       gState.gameHash,
+				ChatLogs:       gState.chatLogs,
+				Hash:           playerHash,
+			})
+
 		}
-
-	} else {
-		playerIndex = len(gState.players)
-		playerHash := myHash.Hash(32)
-		hash = playerHash
-		newPlayer := interfaces.Player{Username: "Player " + strconv.Itoa(playerIndex+1), PlayerHash: playerHash}
-		gState.newPlayer(newPlayer)
-
-		playerHashes[playerHash] = conn
+		// gState.connections = append(gState.connections, conn)
+		defer conn.Close()
 		usernames := []string{}
 		for _, p := range gState.players {
 			usernames = append(usernames, p.Username)
 		}
-		conn.WriteJSON(hangmanClientState{
+
+		currentState := hangmanClientState{
 			Players:        usernames,
 			Turn:           gState.turn,
 			Host:           gState.curHostIndex,
@@ -148,75 +173,52 @@ func handleWebSocketHangman(
 			Winner:         gState.winner,
 			GameHash:       gState.gameHash,
 			ChatLogs:       gState.chatLogs,
-			Hash:           playerHash,
-		})
-
-	}
-	// gState.connections = append(gState.connections, conn)
-	defer conn.Close()
-	usernames := []string{}
-	for _, p := range gState.players {
-		usernames = append(usernames, p.Username)
-	}
-
-	currentState := hangmanClientState{
-		Players:        usernames,
-		Turn:           gState.turn,
-		Host:           gState.curHostIndex,
-		RevealedWord:   gState.revealedWord,
-		GuessesLeft:    gState.guessesLeft,
-		LettersGuessed: gState.guessed,
-		NeedNewWord:    gState.needNewWord,
-		Warning:        "",
-		PlayerIndex:    playerIndex,
-		Winner:         gState.winner,
-		GameHash:       gState.gameHash,
-		ChatLogs:       gState.chatLogs,
-	}
-
-	for i, player := range gState.players {
-		currentState.PlayerIndex = i
-		playerHashes[player.PlayerHash].WriteJSON(currentState)
-	}
-
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			return
 		}
 
-		GameHash := gState.gameHash
-		PlayerIndex := slices.IndexFunc(gState.players, func(p *interfaces.Player) bool {
-			return p.PlayerHash == hash
-		})
-		switch messageType {
-		case websocket.TextMessage:
-			pString := string(p)
-			switch pString[:2] {
-			case "g:":
-				Guess := pString[2:]
-				inp := guessInput{gameHash: GameHash, playerIndex: PlayerIndex, guess: Guess}
-				inputChannel <- &inp
-			case "u:":
-				Username := pString[2:]
-				inp := usernameInput{gameHash: GameHash, playerIndex: PlayerIndex, username: Username}
-				inputChannel <- &inp
-			case "w:":
-				Word := pString[2:]
-				inp := newWordInput{gameHash: GameHash, playerIndex: PlayerIndex, newWord: Word}
-				inputChannel <- &inp
-			case "c:":
-				Chat := pString[2:]
-				inp := chatInput{gameHash: GameHash, playerIndex: PlayerIndex, message: Chat}
-				inputChannel <- &inp
-			case "r:":
-				inp := randomlyChooseWordInput{gameHash: GameHash, playerIndex: PlayerIndex}
-				inputChannel <- &inp
+		for i, player := range gState.players {
+			currentState.PlayerIndex = i
+			playerHashes[player.PlayerHash].WriteJSON(currentState)
+		}
 
-			default:
-				continue
+		for {
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				return
+			}
+
+			GameHash := gState.gameHash
+			PlayerIndex := slices.IndexFunc(gState.players, func(p *interfaces.Player) bool {
+				return p.PlayerHash == hash
+			})
+			switch messageType {
+			case websocket.TextMessage:
+				pString := string(p)
+				switch pString[:2] {
+				case "g:":
+					Guess := pString[2:]
+					inp := guessInput{gameHash: GameHash, playerIndex: PlayerIndex, guess: Guess}
+					inputChannel <- &inp
+				case "u:":
+					Username := pString[2:]
+					inp := usernameInput{gameHash: GameHash, playerIndex: PlayerIndex, username: Username}
+					inputChannel <- &inp
+				case "w:":
+					Word := pString[2:]
+					inp := newWordInput{gameHash: GameHash, playerIndex: PlayerIndex, newWord: Word}
+					inputChannel <- &inp
+				case "c:":
+					Chat := pString[2:]
+					inp := chatInput{gameHash: GameHash, playerIndex: PlayerIndex, message: Chat}
+					inputChannel <- &inp
+				case "r:":
+					inp := randomlyChooseWordInput{gameHash: GameHash, playerIndex: PlayerIndex}
+					inputChannel <- &inp
+
+				default:
+					continue
+				}
 			}
 		}
-	}
 
+	}
 }
