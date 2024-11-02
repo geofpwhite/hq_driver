@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect 4 </title>
+  <script type="text/javascript" >
+  const url = "http://localhost:8080"
+  
+  async function newgame(){
+    let x = await fetch(url+"/tictactoe/new_game")
+    let code = await x.json()
+    console.log(code)
+
+    window.location.href = url+ "/tictactoe/" + code.gameHash
+
+  }
+  </script>
+
+  <style>
+  .button {
+      background-color: white;
+      border-radius: 25px;
+      border: 1px solid #ccc;
+      text-align: center;
+      line-height: 50px;
+    }
+  </style>
+</head>
+
+<body>
+
+<button class="button" onclick="newgame()">
+New Game
+</button>
+
+</body>
+
+</html>
