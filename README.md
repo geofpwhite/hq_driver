@@ -1,4 +1,4 @@
-HQ for various html games.
+Engine for various html games.
 
 All game states implement a Game interface on the backend. That way games can be handled by the same thread despite being different games.
 
