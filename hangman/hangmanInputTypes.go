@@ -4,39 +4,39 @@ import interfaces "github.com/geofpwhite/html_games_engine/interfaces"
 
 type usernameInput struct {
 	username    string
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 type newWordInput struct {
 	newWord     string
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 type randomlyChooseWordInput struct {
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 type guessInput struct {
 	guess       string
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 type chatInput struct {
 	message     string
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 type exitGameInput struct {
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 type closeGameInput struct {
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 
-func (ui *usernameInput) GameHash() string {
-	return ui.gameHash
+func (ui *usernameInput) GameID() string {
+	return ui.gameID
 }
 func (ui *usernameInput) PlayerIndex() int {
 	return ui.playerIndex
@@ -47,8 +47,8 @@ func (ui *usernameInput) ChangeState(gameObj interfaces.Game) {
 	}
 }
 
-func (nwi *newWordInput) GameHash() string {
-	return nwi.gameHash
+func (nwi *newWordInput) GameID() string {
+	return nwi.gameID
 }
 func (nwi *newWordInput) PlayerIndex() int {
 	return nwi.playerIndex
@@ -60,8 +60,8 @@ func (nwi *newWordInput) ChangeState(gameObj interfaces.Game) {
 	}
 
 }
-func (gi *guessInput) GameHash() string {
-	return gi.gameHash
+func (gi *guessInput) GameID() string {
+	return gi.gameID
 }
 func (gi *guessInput) PlayerIndex() int {
 	return gi.playerIndex
@@ -74,8 +74,8 @@ func (gi *guessInput) ChangeState(gameObj interfaces.Game) {
 	}
 }
 
-func (ci *chatInput) GameHash() string {
-	return ci.gameHash
+func (ci *chatInput) GameID() string {
+	return ci.gameID
 }
 func (ci *chatInput) PlayerIndex() int {
 	return ci.playerIndex
@@ -86,8 +86,8 @@ func (ci *chatInput) ChangeState(gameObj interfaces.Game) {
 	}
 }
 
-func (rcwi *randomlyChooseWordInput) GameHash() string {
-	return rcwi.gameHash
+func (rcwi *randomlyChooseWordInput) GameID() string {
+	return rcwi.gameID
 }
 func (rcwi *randomlyChooseWordInput) PlayerIndex() int {
 	return rcwi.playerIndex
@@ -98,8 +98,8 @@ func (rcwi *randomlyChooseWordInput) ChangeState(gameObj interfaces.Game) {
 	}
 }
 
-func (egi *exitGameInput) GameHash() string {
-	return egi.gameHash
+func (egi *exitGameInput) GameID() string {
+	return egi.gameID
 }
 func (egi *exitGameInput) PlayerIndex() int {
 	return egi.playerIndex
@@ -110,8 +110,8 @@ func (egi *exitGameInput) ChangeState(gameObj interfaces.Game) {
 	}
 }
 
-func (cgi *closeGameInput) GameHash() string {
-	return cgi.gameHash
+func (cgi *closeGameInput) GameID() string {
+	return cgi.gameID
 }
 func (cgi *closeGameInput) PlayerIndex() int {
 	return cgi.playerIndex

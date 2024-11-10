@@ -14,14 +14,14 @@ type RegisterRequestBody struct {
 	Username, Password string
 }
 type LogoutRequestBody struct {
-	UserHash string
+	UserID string
 }
 type ResponseBody struct {
-	Success     bool   `json:"Success"`
-	AccountHash string `json:"AccountHash"`
+	Success   bool   `json:"Success"`
+	AccountID string `json:"AccountID"`
 }
 
-func AccountRoutes(r *gin.Engine, agh *AccountsGamesHandler) {
+func AccountRoutes(r *gin.Engine, agh *AccountsGamesController) {
 
 	r.GET("register", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "register.go.tmpl", gin.H{"Title": "Register"})
@@ -46,15 +46,19 @@ func AccountRoutes(r *gin.Engine, agh *AccountsGamesHandler) {
 		c.Bind(loginBody)
 		fmt.Println(loginBody)
 
-		returnHash, err := agh.Login(loginBody.Username, loginBody.Password)
+		returnID, err := agh.Login(loginBody.Username, loginBody.Password)
 		if err != nil {
 			//handle
 			c.AbortWithStatus(401)
-		} else {
-			c.JSON(http.StatusOK, ResponseBody{Success: true, AccountHash: returnHash})
+			return
 		}
+		c.JSON(http.StatusOK, ResponseBody{Success: true, AccountID: returnID})
 	})
-	r.POST("account/logout/:hash", func(c *gin.Context) {
-
+	r.POST("account/logout/:id", func(c *gin.Context) {
+		id, ok := c.Params.Get("id")
+		if !ok {
+			return
+		}
+		agh.Logout(id)
 	})
 }

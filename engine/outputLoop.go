@@ -10,12 +10,12 @@ func OutputLoop(outputChannel <-chan string, games map[string]interfaces.Game, p
 	var game interfaces.Game
 	var json interfaces.ClientState
 	var conn *websocket.Conn
-	for gameHash := range outputChannel {
+	for gameID := range outputChannel {
 
-		game = games[gameHash]
+		game = games[gameID]
 		json = game.JSON()
 		for _, p := range game.Players() {
-			conn = playerHashes[p.PlayerHash]
+			conn = playerHashes[p.PlayerID]
 			if err := conn.WriteJSON(json); err != nil {
 				continue
 			}

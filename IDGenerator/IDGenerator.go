@@ -1,13 +1,14 @@
-package myHash
+package IDGenerator
 
 import (
 	"math/rand"
 	"time"
 )
 
-func Hash(length int) string {
+var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+func GenerateID(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz"
-	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	b := make([]byte, length)
 	for i := range b {

@@ -1,13 +1,14 @@
 package connect4
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"slices"
 	"strconv"
 	"strings"
 
-	myHash "github.com/geofpwhite/html_games_engine/myHash"
+	IDGenerator "github.com/geofpwhite/html_games_engine/IDGenerator"
 
 	interfaces "github.com/geofpwhite/html_games_engine/interfaces"
 
@@ -19,24 +20,24 @@ func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 	r.GET("/connect4/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_screen_connect4.go.tmpl", gin.H{})
 	})
-	r.GET("/connect4/ws/:gameHash", func(c *gin.Context) {
+	r.GET("/connect4/ws/:gameID", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		gameHash, b := c.Params.Get("gameHash")
+		gameID, b := c.Params.Get("gameID")
 		if err != nil || !b {
-			panic("/hangman/ws/:gameHash gave an error")
+			panic("/hangman/ws/:gameID gave an error")
 		}
-		gameObj := games[gameHash]
+		gameObj := games[gameID]
 		game := gameObj.(*connect4)
-		playerHash := myHash.Hash(10)
+		playerHash := IDGenerator.GenerateID(10)
 		playerHashes[playerHash] = conn
 		if game.playersConnected >= 2 {
 			//don't let them join
 			return
 		} else if game.playersConnected == 1 {
-			game.players = append(game.players, &interfaces.Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 1})
+			game.players = append(game.players, &interfaces.Player{PlayerID: playerHash, GameID: gameID, PlayerIndex: 1})
 			game.playersConnected++
 		} else if game.playersConnected == 0 {
-			game.players = append(game.players, &interfaces.Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 0})
+			game.players = append(game.players, &interfaces.Player{PlayerID: playerHash, GameID: gameID, PlayerIndex: 0})
 			game.playersConnected++
 		}
 		if !b {
@@ -57,16 +58,19 @@ func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 				switch string(msg) {
 				case "r":
 					// rotate(game)
-					c4i := connect4RotateInput{gameHash: gameHash, playerIndex: -1}
+					c4i := connect4RotateInput{gameID: gameID, playerIndex: -1}
 					inputChannel <- &c4i
 				default:
 					// insert(game, team, column)
 					msgStrings := strings.Split(string(msg), ",")
 					team, _ := strconv.Atoi(msgStrings[0])
 					column, _ := strconv.Atoi(msgStrings[1])
-					c4i := connect4InsertInput{gameHash: gameHash, team: team, column: column}
+					c4i := connect4InsertInput{gameID: gameID, team: team, column: column}
 					inputChannel <- &c4i
 				}
+			} else {
+				obj := make(map[string]any)
+				json.Unmarshal(msg, &obj)
 			}
 		}
 
@@ -77,8 +81,8 @@ func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 		games[hash] = g
 		c.JSON(200, hash)
 	})
-	r.GET("/connect4/:gameHash", func(c *gin.Context) {
-		gameHash, b := c.Params.Get("gameHash")
+	r.GET("/connect4/:gameID", func(c *gin.Context) {
+		gameID, b := c.Params.Get("gameID")
 		colors := map[string]string{
 			"1": "blue",
 			"2": "red",
@@ -86,7 +90,7 @@ func Connect4Routes(r *gin.Engine, upgrader *websocket.Upgrader, games map[strin
 		if !b {
 			return
 		}
-		game := (games[gameHash]).(*connect4)
+		game := (games[gameID]).(*connect4)
 		fmt.Println(game)
 		rows := make([][]string, 8)
 		for i := range rows {

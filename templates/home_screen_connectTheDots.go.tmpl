@@ -11,9 +11,7 @@
   async function newgame(){
     let x = await fetch(url+"/connect-the-dots/new_game")
     let code = await x.text()
-    console.log(code)
     code = code.substring(1,7)
-    console.log(code)
     window.location.href = url+ "/connect-the-dots/" + code
 
   }

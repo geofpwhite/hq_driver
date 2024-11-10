@@ -1,8 +1,8 @@
 package connectthedots
 
 import (
+	IDGenerator "github.com/geofpwhite/html_games_engine/IDGenerator"
 	interfaces "github.com/geofpwhite/html_games_engine/interfaces"
-	myHash "github.com/geofpwhite/html_games_engine/myHash"
 )
 
 const EMPTY, BLUE, RED, POINT = 0, 1, 2, 3
@@ -37,7 +37,7 @@ func NewGameConnectTheDots(size int) (*connectTheDots, string) {
 		}
 	}
 	ctd := &connectTheDots{size: size, field: field, turn: BLUE}
-	hash := myHash.Hash(6)
+	hash := IDGenerator.GenerateID(6)
 	return ctd, hash
 }
 

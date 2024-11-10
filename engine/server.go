@@ -36,10 +36,8 @@ func Serve(inputChannel chan interfaces.Input, games map[string]interfaces.Game,
 		c.HTML(http.StatusOK, "home_page.go.tmpl", gin.H{})
 	})
 	r.GET("/about", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "about.go.tmpl", gin.H{})
-	})
-	r.GET("/contact", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "home_page.go.tmpl", gin.H{})
+		// c.HTML(http.StatusOK, "about.go.tmpl", gin.H{})
+		c.Redirect(http.StatusMovedPermanently, "https://github.com/geofpwhite/html_games_engine")
 	})
 
 	hangman.HangmanRoutes(r, &upgrader, games, playerHashes, inputChannel)

@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	IDGenerator "github.com/geofpwhite/html_games_engine/IDGenerator"
 	interfaces "github.com/geofpwhite/html_games_engine/interfaces"
-	myHash "github.com/geofpwhite/html_games_engine/myHash"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -31,7 +31,7 @@ type hangmanClientState struct {
 	Winner         int       `json:"winner"`
 	ChatLogs       []chatLog `json:"chatLogs"`
 	Hash           string    `json:"hash"`
-	GameHash       string    `json:"gameHash"`
+	GameID         string    `json:"gameID"`
 }
 
 type chatLog struct {
@@ -53,11 +53,11 @@ type hangman struct {
 	guessesLeft         int
 	needNewWord         bool
 	winner              int
-	mut                 *sync.Mutex
+	mut                 *sync.RWMutex
 	chatLogs            []chatLog
 	consecutiveTimeouts int
 	randomlyChosen      bool //boolean for methods to check if they need to act differently because the backend randomly chose a word
-	gameHash            string
+	gameID              string
 }
 
 func newGameHangman() *hangman {
@@ -70,10 +70,10 @@ func newGameHangman() *hangman {
 		needNewWord:  true,
 		guessesLeft:  6,
 		players:      make([]*interfaces.Player, 0),
-		mut:          &sync.Mutex{},
+		mut:          &sync.RWMutex{},
 	}
-	gameCode := myHash.Hash(6)
-	gState.gameHash = gameCode
+	gameCode := IDGenerator.GenerateID(6)
+	gState.gameID = gameCode
 	return gState
 }
 
@@ -91,10 +91,10 @@ func (gState *hangman) runTicker(timeoutChannel chan<- string, inputChannel <-ch
 		case <-ticker.C:
 			log.Println("ticker")
 
-			timeoutChannel <- (*gState).gameHash
+			timeoutChannel <- (*gState).gameID
 			gState.consecutiveTimeouts++
 			if gState.consecutiveTimeouts >= len(gState.players) {
-				closeGameChannel <- gState.gameHash
+				closeGameChannel <- gState.gameID
 			}
 
 		case x := <-inputChannel:
@@ -224,7 +224,7 @@ func (gState *hangman) closeGame() {
 	// for _, p := range gState.players {
 	// 	delete(hashes, p.hash)
 	// }
-	// delete(gameHashes, gState.gameHash)
+	// delete(gameIDes, gState.gameID)
 }
 
 func (gState *hangman) removePlayer(playerIndex int) {
@@ -259,7 +259,7 @@ func (gState *hangman) handleTickerTimeout() string {
 			(*gState).turn = ((*gState).turn + 1) % len((*gState).players)
 		}
 	}
-	return gState.gameHash
+	return gState.gameID
 }
 
 func (gState *hangman) changeUsername(playerIndex int, newUsername string) {
@@ -289,8 +289,8 @@ func (gState *hangman) chat(message string, playerIndex int) {
 		})
 }
 func (gState *hangman) JSON() interfaces.ClientState {
-	gState.mut.Lock()
-	defer gState.mut.Unlock()
+	gState.mut.RLock()
+	defer gState.mut.RUnlock()
 	usernames := []string{}
 	for _, p := range (*gState).players {
 		usernames = append(usernames, p.Username)
@@ -304,7 +304,7 @@ func (gState *hangman) JSON() interfaces.ClientState {
 		GuessesLeft:    gState.guessesLeft,
 		LettersGuessed: gState.guessed,
 		NeedNewWord:    gState.needNewWord,
-		GameHash:       gState.gameHash,
+		GameID:         gState.gameID,
 		Warning:        "",
 		Winner:         gState.winner,
 		ChatLogs:       gState.chatLogs,

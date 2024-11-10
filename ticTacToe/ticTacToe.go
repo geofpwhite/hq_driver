@@ -3,14 +3,14 @@ package tictactoe
 import (
 	"sync"
 
+	IDGenerator "github.com/geofpwhite/html_games_engine/IDGenerator"
 	interfaces "github.com/geofpwhite/html_games_engine/interfaces"
-	myHash "github.com/geofpwhite/html_games_engine/myHash"
 )
 
 const X, O = 1, 2
 
 type ticTacToe struct {
-	mut         *sync.Mutex
+	mut         *sync.RWMutex
 	field       [3][3]int
 	turn        int
 	players     [2]*interfaces.Player
@@ -28,10 +28,10 @@ func NewGameTicTacToe() (*ticTacToe, string) {
 	gState := &ticTacToe{
 		field:  [3][3]int{},
 		turn:   1,
-		mut:    &sync.Mutex{},
+		mut:    &sync.RWMutex{},
 		scores: [2]int{},
 	}
-	return gState, myHash.Hash(6)
+	return gState, IDGenerator.GenerateID(6)
 }
 
 // reset will only be called by the move() function, so we shan't Lock the mutex

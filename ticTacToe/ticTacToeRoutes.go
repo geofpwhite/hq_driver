@@ -1,11 +1,12 @@
 package tictactoe
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
+	IDGenerator "github.com/geofpwhite/html_games_engine/IDGenerator"
 	interfaces "github.com/geofpwhite/html_games_engine/interfaces"
-	myHash "github.com/geofpwhite/html_games_engine/myHash"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -15,22 +16,22 @@ func TicTacToeRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[stri
 	r.GET("/tictactoe", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_screen_tictactoe.go.tmpl", gin.H{})
 	})
-	r.GET("/tictactoe/:gameHash", func(c *gin.Context) {
-		gameHash, b := c.Params.Get("gameHash")
+	r.GET("/tictactoe/:gameID", func(c *gin.Context) {
+		gameID, b := c.Params.Get("gameID")
 		if !b {
 			return
 		}
-		c.HTML(http.StatusOK, "tictactoe.go.tmpl", gin.H{"Rows": (games[gameHash]).(*ticTacToe).field})
+		c.HTML(http.StatusOK, "tictactoe.go.tmpl", gin.H{"Rows": (games[gameID]).(*ticTacToe).field})
 	})
-	r.GET("/tictactoe/ws/:gameHash", func(c *gin.Context) {
+	r.GET("/tictactoe/ws/:gameID", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		gameHash, b := c.Params.Get("gameHash")
+		gameID, b := c.Params.Get("gameID")
 		if err != nil || !b {
 			return
 		}
-		handleWebSocketTicTacToe(conn, inputChannel, games[gameHash], false, "", playerHashes, gameHash)
+		handleWebSocketTicTacToe(conn, inputChannel, games[gameID], false, "", playerHashes, gameID)
 	})
-	r.GET("/tictactoe/reconnect/:playerHash/:gameHash", func(c *gin.Context) {
+	r.GET("/tictactoe/reconnect/:playerHash/:gameID", func(c *gin.Context) {
 
 	})
 	r.GET("/tictactoe/new_game", func(c *gin.Context) {
@@ -38,9 +39,9 @@ func TicTacToeRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map[stri
 		var game interfaces.Game = gState
 		games[hash] = game
 		c.JSON(200, struct {
-			GameHash string `json:"gameHash"`
-			Team     int    `json:"team"`
-		}{GameHash: hash, Team: 1})
+			GameID string `json:"gameID"`
+			Team   int    `json:"team"`
+		}{GameID: hash, Team: 1})
 	})
 
 }
@@ -51,7 +52,7 @@ func handleWebSocketTicTacToe(conn *websocket.Conn,
 	reconnect bool,
 	hash string,
 	playerHashes map[string]*websocket.Conn,
-	gameHash string,
+	gameID string,
 ) {
 	if gState, ok := gameObj.(*ticTacToe); ok {
 		var playerIndex int
@@ -63,23 +64,22 @@ func handleWebSocketTicTacToe(conn *websocket.Conn,
 				return
 			}
 			playerIndex = gState.playersSize
-			hash = myHash.Hash(10)
-			newPlayer := interfaces.Player{Username: "Player " + strconv.Itoa(playerIndex), PlayerHash: hash}
+			hash = IDGenerator.GenerateID(10)
+			newPlayer := interfaces.Player{Username: "Player " + strconv.Itoa(playerIndex), PlayerID: hash}
 			playerIndex = gState.newPlayer(newPlayer)
 			playerHashes[hash] = conn
+
 		}
 		defer conn.Close()
+		ui := &moveInput{gameID: gameID, playerIndex: playerIndex, team: playerIndex + 1}
 		for {
-			messageType, msg, err := conn.ReadMessage()
+			err := conn.ReadJSON(ui)
 			if err != nil {
+				fmt.Println(err)
 				return
 			}
-			if messageType == websocket.TextMessage {
-				x, _ := strconv.Atoi(string(msg[0]))
-				y, _ := strconv.Atoi(string(msg[1]))
-				mi := moveInput{gameHash: gameHash, x: x, y: y, team: playerIndex + 1, playerIndex: playerIndex}
-				inputChannel <- &mi
-			}
+			fmt.Println(ui)
+			inputChannel <- ui
 		}
 	}
 }

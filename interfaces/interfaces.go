@@ -14,14 +14,14 @@ type Game interface {
 interface for each game type's user input object to implement
 */
 type Input interface {
-	GameHash() string
+	GameID() string
 	PlayerIndex() int
 	ChangeState(Game)
 }
 
 type Player struct {
-	PlayerHash  string
-	GameHash    string
+	PlayerID    string
+	GameID      string
 	PlayerIndex int
 	Username    string
 }

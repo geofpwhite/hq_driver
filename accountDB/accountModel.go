@@ -23,9 +23,14 @@ type Account struct {
 
 type GameType int
 
-const HANGMAN, CONNECT4 GameType = 1, 2
+const (
+	HANGMAN GameType = iota
+	CONNECT4
+	CONNECTTHEDOTS
+	TICTACTOE
+)
 
-func Hash(length int) string {
+func GenerateID(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz"
 	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -44,19 +49,19 @@ type GameInstance struct {
 	Losers   []*Account `gorm:"many2many:account_losses"`
 }
 
-type AccountsGamesHandler struct {
+type AccountsGamesController struct {
 	*sync.Mutex
 	db    *gorm.DB
 	users map[string]*Account
 }
 
-func NewAccountsGamesHandler() *AccountsGamesHandler {
+func NewAccountsGamesHandler() *AccountsGamesController {
 	db, err := gorm.Open(sqlite.Open("./accounts.db"))
 	if err != nil {
 		panic("err reading accounts.db")
 	}
 
-	agh := &AccountsGamesHandler{
+	agh := &AccountsGamesController{
 		db:    db,
 		users: make(map[string]*Account),
 	}
@@ -65,7 +70,7 @@ func NewAccountsGamesHandler() *AccountsGamesHandler {
 	return agh
 }
 
-func (agh *AccountsGamesHandler) Register(username, password string) error {
+func (agh *AccountsGamesController) Register(username, password string) error {
 	agh.Lock()
 	defer agh.Unlock()
 	bytes := []byte(password)
@@ -91,7 +96,7 @@ func (agh *AccountsGamesHandler) Register(username, password string) error {
 	agh.db.Save(acc)
 	return nil
 }
-func (agh *AccountsGamesHandler) Login(username, password string) (string, error) {
+func (agh *AccountsGamesController) Login(username, password string) (string, error) {
 	agh.Lock()
 	defer agh.Unlock()
 	bytes := []byte(password)
@@ -101,35 +106,35 @@ func (agh *AccountsGamesHandler) Login(username, password string) (string, error
 	if err != nil || agh.users[username] != nil {
 		return "", errors.New("already logged in")
 	}
-	hash := Hash(12)
-	agh.users[hash] = check
-	return hash, nil
+	id := GenerateID(12)
+	agh.users[id] = check
+	return id, nil
 }
 
-func (agh *AccountsGamesHandler) Logout(hash string) {
-	delete(agh.users, hash)
+func (agh *AccountsGamesController) Logout(id string) {
+	delete(agh.users, id)
 }
 
-func (agh *AccountsGamesHandler) RecordGame(gameType GameType, winners, losers []*Account) {
+func (agh *AccountsGamesController) RecordGame(gameType GameType, winners, losers []*Account) {
 	agh.Lock()
 	defer agh.Unlock()
 	game := &GameInstance{GameType: gameType, Winners: winners, Losers: losers}
 	agh.db.Save(game)
 }
 
-func (agh *AccountsGamesHandler) AddLoser(game *GameInstance, loser *Account) {
+func (agh *AccountsGamesController) AddLoser(game *GameInstance, loser *Account) {
 	agh.Lock()
 	defer agh.Unlock()
 	game.Losers = append(game.Losers, loser)
 	agh.db.Save(game)
 }
-func (agh *AccountsGamesHandler) AddWinner(game *GameInstance, winner *Account) {
+func (agh *AccountsGamesController) AddWinner(game *GameInstance, winner *Account) {
 	agh.Lock()
 	defer agh.Unlock()
 	game.Winners = append(game.Winners, winner)
 	agh.db.Save(game)
 }
-func (agh *AccountsGamesHandler) GetGame(gameID uint) *GameInstance {
+func (agh *AccountsGamesController) GetGame(gameID uint) *GameInstance {
 	agh.Lock()
 	defer agh.Unlock()
 	var game *GameInstance

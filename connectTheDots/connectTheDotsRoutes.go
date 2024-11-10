@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	IDGenerator "github.com/geofpwhite/html_games_engine/IDGenerator"
 	interfaces "github.com/geofpwhite/html_games_engine/interfaces"
-	myHash "github.com/geofpwhite/html_games_engine/myHash"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -17,8 +17,8 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 	r.GET("/connect-the-dots", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home_screen_connectTheDots.go.tmpl", gin.H{})
 	})
-	r.GET("/connect-the-dots/:gameHash", func(c *gin.Context) {
-		gameHash, b := c.Params.Get("gameHash")
+	r.GET("/connect-the-dots/:gameID", func(c *gin.Context) {
+		gameID, b := c.Params.Get("gameID")
 		if !b {
 			panic("no game hash")
 		}
@@ -26,7 +26,7 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 		for i := 0; i < 14; i++ {
 			str += " auto"
 		}
-		c.HTML(http.StatusOK, "connectTheDots.go.tmpl", gin.H{"Rows": (games[gameHash]).(*connectTheDots).field, "SizeInt": 8, "GridTemplate": str, "SizeGrid": [7]int{}})
+		c.HTML(http.StatusOK, "connectTheDots.go.tmpl", gin.H{"Rows": (games[gameID]).(*connectTheDots).field, "SizeInt": 8, "GridTemplate": str, "SizeGrid": [7]int{}})
 	})
 	r.GET("/connect-the-dots-test", func(c *gin.Context) {
 		str := "auto"
@@ -42,25 +42,25 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 		games[hash] = g
 		c.JSON(200, hash)
 	})
-	r.GET("/connect-the-dots/reconnect/:gameHash/:playerHash", func(c *gin.Context) {})
-	r.GET("/connect-the-dots/ws/:gameHash", func(c *gin.Context) {
+	r.GET("/connect-the-dots/reconnect/:gameID/:playerHash", func(c *gin.Context) {})
+	r.GET("/connect-the-dots/ws/:gameID", func(c *gin.Context) {
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-		gameHash, b := c.Params.Get("gameHash")
+		gameID, b := c.Params.Get("gameID")
 		if err != nil || !b {
-			panic("/hangman/ws/:gameHash gave an error")
+			panic("/hangman/ws/:gameID gave an error")
 		}
-		gameObj := games[gameHash]
+		gameObj := games[gameID]
 		game := gameObj.(*connectTheDots)
-		playerHash := myHash.Hash(10)
+		playerHash := IDGenerator.GenerateID(10)
 		playerHashes[playerHash] = conn
 		if game.playersConnected >= 2 {
 			//don't let them join
 			return
 		} else if game.playersConnected == 1 {
-			game.players = append(game.players, &interfaces.Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 1})
+			game.players = append(game.players, &interfaces.Player{PlayerID: playerHash, GameID: gameID, PlayerIndex: 1})
 			game.playersConnected++
 		} else if game.playersConnected == 0 {
-			game.players = append(game.players, &interfaces.Player{PlayerHash: playerHash, GameHash: gameHash, PlayerIndex: 0})
+			game.players = append(game.players, &interfaces.Player{PlayerID: playerHash, GameID: gameID, PlayerIndex: 0})
 			game.playersConnected++
 		}
 		if !b {
@@ -71,7 +71,7 @@ func ConnectTheDotsRoutes(r *gin.Engine, upgrader *websocket.Upgrader, games map
 			//handle game exit
 		}()
 
-		HandleWebSocketConnectTheDots(conn, inputChannel, gameObj.(*connectTheDots), false, playerHash, playerHashes, gameHash)
+		HandleWebSocketConnectTheDots(conn, inputChannel, gameObj.(*connectTheDots), false, playerHash, playerHashes, gameID)
 	})
 }
 
@@ -80,13 +80,13 @@ func HandleWebSocketConnectTheDots(conn *websocket.Conn,
 	game *connectTheDots,
 	reconnect bool,
 	hash string,
-	playerHashes map[string]*websocket.Conn, gameHash string) {
+	playerHashes map[string]*websocket.Conn, gameID string) {
 	for {
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
 			return
 		}
-		playerIndex := slices.IndexFunc(game.players, func(p *interfaces.Player) bool { return p.PlayerHash == hash })
+		playerIndex := slices.IndexFunc(game.players, func(p *interfaces.Player) bool { return p.PlayerID == hash })
 		switch messageType {
 		case websocket.TextMessage:
 			pString := string(p)
@@ -104,7 +104,7 @@ func HandleWebSocketConnectTheDots(conn *websocket.Conn,
 					team:        playerIndex + 1,
 					playerIndex: playerIndex,
 					coords:      coords,
-					gameHash:    gameHash,
+					gameID:      gameID,
 				}
 				inputChannel <- ctdaei
 

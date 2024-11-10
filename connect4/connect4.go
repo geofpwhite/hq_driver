@@ -4,8 +4,8 @@ import (
 	"slices"
 	"sync"
 
+	IDGenerator "github.com/geofpwhite/html_games_engine/IDGenerator"
 	interfaces "github.com/geofpwhite/html_games_engine/interfaces"
-	myHash "github.com/geofpwhite/html_games_engine/myHash"
 )
 
 const EMPTY = 0
@@ -13,13 +13,13 @@ const BLUE = 1
 const RED = 2
 
 type connect4InsertInput struct {
-	gameHash    string
+	gameID      string
 	playerIndex int
 	team        int
 	column      int
 }
 type connect4RotateInput struct {
-	gameHash    string
+	gameID      string
 	playerIndex int
 }
 
@@ -32,8 +32,8 @@ func (c4i *connect4InsertInput) ChangeState(gameObj interfaces.Game) {
 	}
 }
 
-func (c4i *connect4InsertInput) GameHash() string {
-	return c4i.gameHash
+func (c4i *connect4InsertInput) GameID() string {
+	return c4i.gameID
 }
 func (c4i *connect4InsertInput) PlayerIndex() int {
 	return c4i.playerIndex
@@ -48,8 +48,8 @@ func (c4i *connect4RotateInput) ChangeState(gameObj interfaces.Game) {
 	}
 }
 
-func (c4i *connect4RotateInput) GameHash() string {
-	return c4i.gameHash
+func (c4i *connect4RotateInput) GameID() string {
+	return c4i.gameID
 }
 func (c4i *connect4RotateInput) PlayerIndex() int {
 	return c4i.playerIndex
@@ -66,19 +66,19 @@ type connect4 struct {
 	turn             int
 	playersConnected int
 	players          []*interfaces.Player
-	mut              *sync.Mutex
+	mut              *sync.RWMutex
 }
 
 func newGameConnect4() (*connect4, string) {
 	c4 := &connect4{
 		field: make([][]int, 8),
 		turn:  BLUE,
-		mut:   &sync.Mutex{},
+		mut:   &sync.RWMutex{},
 	}
 	for i := 0; i < 8; i++ {
 		c4.field[i] = make([]int, 8)
 	}
-	hash := myHash.Hash(6)
+	hash := IDGenerator.GenerateID(6)
 	return c4, hash
 }
 
@@ -86,8 +86,8 @@ func (c4 *connect4) Players() []*interfaces.Player {
 	return c4.players
 }
 func (c4 *connect4) JSON() interfaces.ClientState {
-	c4.mut.Lock()
-	defer c4.mut.Unlock()
+	c4.mut.RLock()
+	defer c4.mut.RUnlock()
 	var cp [][]int = make([][]int, 8)
 	copy(cp, c4.field)
 	slices.Reverse(cp)
@@ -164,8 +164,8 @@ type queueElement struct {
 // rotating may cause both players to have
 func (c4 *connect4) scanForConnect4() map[queueElement]bool {
 
-	c4.mut.Lock()
-	defer c4.mut.Unlock()
+	c4.mut.RLock()
+	defer c4.mut.RUnlock()
 	winners := map[queueElement]bool{}
 	coordinateQueue := []queueElement{}
 	for i, num := range c4.field[0] {
