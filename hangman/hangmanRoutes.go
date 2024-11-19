@@ -1,7 +1,9 @@
 package hangman
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"reflect"
 	"slices"
@@ -184,9 +186,16 @@ func handleWebSocketHangman(
 			playerHashes[player.PlayerID].WriteJSON(currentState)
 		}
 
+		base := &struct {
+			Type string `json:"type"`
+		}{}
 		for {
-			messageType, p, err := conn.ReadMessage()
+			messageType, msg, err := conn.ReadMessage()
 			if err != nil {
+				return
+			}
+			if err := json.Unmarshal(msg, &base); err != nil {
+				log.Printf("Error unmarshaling base message: %v", err)
 				return
 			}
 
@@ -196,7 +205,7 @@ func handleWebSocketHangman(
 			})
 			switch messageType {
 			case websocket.TextMessage:
-				pString := string(p)
+				pString := string(msg)
 				switch pString[:2] {
 				case "g:":
 					Guess := pString[2:]

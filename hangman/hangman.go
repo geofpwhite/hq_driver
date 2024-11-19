@@ -127,37 +127,35 @@ func (gState *hangman) guess(letter rune) bool {
 	if gState.needNewWord {
 		return false
 	}
-	if !strings.Contains(gState.guessed, string(letter)) {
-		good := false
-		gState.guessed += string(letter)
-		for i, char := range gState.currentWord {
-			if char == letter {
-				gState.revealedWord = gState.revealedWord[:i] + string(letter) + gState.revealedWord[i+1:]
-				good = true
-			}
-		}
-		x := 0x10p23
-		print(x)
-		if gState.currentWord == gState.revealedWord {
-			gState.needNewWord = true
-			gState.turn = (gState.curHostIndex + 2) % len(gState.players)
-			gState.curHostIndex = (gState.curHostIndex + 1) % len(gState.players)
-			gState.winner = HOST_LOSES
-		} else if gState.guessesLeft == 1 && !good {
-			gState.needNewWord = true
-			gState.turn = (gState.curHostIndex + 2) % len(gState.players)
-			gState.winner = HOST_WINS
-			gState.curHostIndex = (gState.curHostIndex + 1) % len(gState.players)
-		} else if !good {
-			gState.guessesLeft--
-			gState.turn = (gState.turn + 1) % len(gState.players)
-			if gState.turn == gState.curHostIndex && !gState.randomlyChosen {
-				gState.turn = (gState.turn + 1) % len(gState.players)
-			}
-		}
-		return true
+	if strings.Contains(gState.guessed, string(letter)) {
+		return false
 	}
-	return false
+	good := false
+	gState.guessed += string(letter)
+	for i, char := range gState.currentWord {
+		if char == letter {
+			gState.revealedWord = gState.revealedWord[:i] + string(letter) + gState.revealedWord[i+1:]
+			good = true
+		}
+	}
+	if gState.currentWord == gState.revealedWord {
+		gState.needNewWord = true
+		gState.turn = (gState.curHostIndex + 2) % len(gState.players)
+		gState.curHostIndex = (gState.curHostIndex + 1) % len(gState.players)
+		gState.winner = HOST_LOSES
+	} else if gState.guessesLeft == 1 && !good {
+		gState.needNewWord = true
+		gState.turn = (gState.curHostIndex + 2) % len(gState.players)
+		gState.winner = HOST_WINS
+		gState.curHostIndex = (gState.curHostIndex + 1) % len(gState.players)
+	} else if !good {
+		gState.guessesLeft--
+		gState.turn = (gState.turn + 1) % len(gState.players)
+		if gState.turn == gState.curHostIndex && !gState.randomlyChosen {
+			gState.turn = (gState.turn + 1) % len(gState.players)
+		}
+	}
+	return true
 }
 
 func (gState *hangman) randomNewWord() {

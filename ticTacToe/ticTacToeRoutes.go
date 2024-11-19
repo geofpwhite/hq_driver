@@ -1,7 +1,8 @@
 package tictactoe
 
 import (
-	"fmt"
+	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -71,15 +72,27 @@ func handleWebSocketTicTacToe(conn *websocket.Conn,
 
 		}
 		defer conn.Close()
-		ui := &moveInput{gameID: gameID, playerIndex: playerIndex, team: playerIndex + 1}
+		base := &struct {
+			Type string `json:"type"`
+		}{}
 		for {
-			err := conn.ReadJSON(ui)
+			_, msg, err := conn.ReadMessage()
 			if err != nil {
-				fmt.Println(err)
 				return
 			}
-			fmt.Println(ui)
-			inputChannel <- ui
+			if err := json.Unmarshal(msg, &base); err != nil {
+				log.Printf("Error unmarshaling base message: %v", err)
+				return
+			}
+			switch base.Type {
+			case "move":
+				mi := &moveInput{gameID: gameID, playerIndex: playerIndex, team: playerIndex + 1}
+				if err := json.Unmarshal(msg, mi); err != nil {
+					log.Printf("Error unmarshaling move message: %v", err)
+					return
+				}
+				inputChannel <- mi
+			}
 		}
 	}
 }

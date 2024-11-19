@@ -14,7 +14,7 @@
     function move(x,y) {
       str = ""+x+""+y+""
 
-      socket.send(JSON.stringify({x: x,y: y,gameID: gamecode}));
+      socket.send(JSON.stringify({type: 'move',x: x,y: y,gameID: gamecode}));
     }
     socket.onmessage = (event) => {
       let obj = JSON.parse(event.data);

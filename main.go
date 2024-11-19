@@ -15,5 +15,6 @@ func main() {
 	outputChannel := make(chan string)
 	go engine.Serve(inputChannel, games, playerHashes)
 	go engine.OutputLoop(outputChannel, games, playerHashes)
+
 	engine.GameLoop(inputChannel, outputChannel, games)
 }
